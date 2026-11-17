@@ -1,0 +1,57 @@
+# 每 2 小时自动刷新家宽节点（CFnew v3.1 家宽链式，离线生成版）
+#
+# 作用：每 2 小时运行 gh-action/generate_jk.py，重新拉取
+#   - Pages 订阅的前置节点（cfnew-aeo.pages.dev）
+#   - 公开 VPN Gate 清单的家宽落地节点
+# 重新生成 jk_home.yaml / jk_home_cmcc.yaml 并提交回 main 分支。
+# 用户在 Clash Meta 里订阅下面两个 raw 地址，更新时即拿到最新节点：
+#   https://raw.githubusercontent.com/dotechimemominivi21731-ui/cfnew-worker/main/jk_home.yaml
+#   https://raw.githubusercontent.com/dotechimemominivi21731-ui/cfnew-worker/main/jk_home_cmcc.yaml
+#
+# 安装：把本文件放到仓库的 .github/workflows/update-jk.yml，
+#       把 gh-action/generate_jk.py 放在仓库的 gh-action/ 目录下。
+#       不需要任何 secret，默认 GITHUB_TOKEN 即可推送。
+name: Refresh home-broadband nodes
+
+"on":
+  schedule:
+    # 每 2 小时一次（UTC 0,2,4,...点，即 CST 8,10,12,...点）
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-jk-nodes
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Regenerate jk_home.yaml and jk_home_cmcc.yaml
+        run: python3 gh-action/generate_jk.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "muse-bot"
+          git config user.email "muse-bot@users.noreply.github.com"
+          git add jk_home.yaml jk_home_cmcc.yaml
+          if git diff --cached --quiet; then
+            echo "No node changes, nothing to commit."
+          else
+            git commit -m "chore: refresh home-broadband nodes $(date -u +%F)"
+            git push
+          fi

@@ -14,8 +14,9 @@ What it does (mirrors the logic in _worker.js: 解析家宽清单 /
      "public-vpn", IP starting with "219.100.37."), sorts by speed,
      JP/KR first, max 30 home nodes.
   3. Writes jk_home.yaml (front = preferred-domain VLESS nodes) and
-     jk_home_cmcc.yaml (front = 2 direct pages.dev nodes, China Mobile
-     version) into the current working directory.
+     jk_home_cmcc.yaml (front = preferred-domain VLESS nodes + 2 direct
+     pages.dev nodes, China Mobile version — the url-test front group
+     picks the fastest front on the phone's own mobile connection) into the current working directory.
 
 Placement in the GitHub repo (zhaor5869-svg/cfnew-worker):
   - this file  -> gh-action/generate_jk.py
@@ -494,13 +495,26 @@ def main():
     with open("jk_home.yaml", "w", encoding="utf-8") as f:
         f.write(doc)
 
-    cmcc_front = [direct_front_node(name, host) for name, host in DIRECT_FRONT]
+    # China Mobile version: the front matters most on CM data. The
+    # phone -> Cloudflare hop is the first hop of the whole chain, and
+    # CM's routing to Cloudflare's anycast edge is often poor, while
+    # some preferred-domain IPs route CM -> HK/JP/SG much faster.
+    # So the CM front is BOTH the 21 preferred-domain nodes AND the
+    # 2 direct pages.dev nodes; the ⚡ CF前置 url-test group measures
+    # them all on the phone's own CM connection and always uses the
+    # fastest one. (Earlier the 2 direct nodes alone were used because
+    # the preferred domains had failed a direct latency test — but as
+    # a dialer-proxy front they only carry the OpenVPN TCP stream, and
+    # url-test picks whichever is actually fastest on CM.)
+    cmcc_front = list(front) + [
+        direct_front_node(name, host) for name, host in DIRECT_FRONT
+    ]
     doc_cmcc = build_document(
         cmcc_front,
         home_nodes,
         cert,
         stamp,
-        "移动版：前置不走优选域名，直连 cfnew-aeo.pages.dev / cfnew-bq1.pages.dev；"
+        "移动版：前置为 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；"
         "家宽节点来自公开 VPN Gate 清单",
     )
     with open("jk_home_cmcc.yaml", "w", encoding="utf-8") as f:

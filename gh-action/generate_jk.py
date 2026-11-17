@@ -17,12 +17,12 @@ What it does (mirrors the logic in _worker.js: 解析家宽清单 /
      jk_home_cmcc.yaml (front = 2 direct pages.dev nodes, China Mobile
      version) into the current working directory.
 
-Placement in the GitHub repo (dotechimemominivi21731-ui/cfnew-worker):
+Placement in the GitHub repo (zhaor5869-svg/cfnew-worker):
   - this file  -> gh-action/generate_jk.py
   - workflow   -> .github/workflows/update-jk.yml  (runs
     `python3 gh-action/generate_jk.py` from the repo root, so both
     output files land at the repo root and can be subscribed to as
-    raw.githubusercontent.com/dotechimemominivi21731-ui/cfnew-worker/main/jk_home.yaml
+    raw.githubusercontent.com/zhaor5869-svg/cfnew-worker/main/jk_home.yaml
     and .../jk_home_cmcc.yaml)
 
 Exits non-zero if fewer than 10 home nodes parse or if a generated
@@ -127,10 +127,15 @@ def parse_vpngate(text):
             speed = int(fields[4])
         except (ValueError, TypeError):
             speed = 0
+        try:
+            ping = int(fields[3])
+        except (ValueError, TypeError):
+            ping = 9999
         candidates.append(
             {
                 "country": (fields[6] or "").upper() or "XX",
                 "speed": speed,
+                "ping": ping,
                 "config64": config64,
             }
         )
@@ -179,6 +184,8 @@ def parse_vpngate(text):
         nodes.append(
             {
                 "country": item["country"],
+                "ping": item["ping"],
+                "speed": item["speed"],
                 "server": remote[0],
                 "port": port,
                 "cipher": directive(config, "cipher") or "AES-128-CBC",
@@ -345,10 +352,10 @@ def build_document(front_nodes, home_nodes, cert, generated_stamp, extra_note):
     body.append("    proxies:")
     body.append(group_lines(front_names))
     body.append(f'  - name: {quote(HOME_AUTO)}')
-    body.append("    type: fallback")
+    body.append("    type: url-test")
     body.append("    url: https://www.gstatic.com/generate_204")
-    body.append("    interval: 1800")
-    body.append("    lazy: true")
+    body.append("    interval: 600")
+    body.append("    tolerance: 50")
     body.append("    proxies:")
     body.append(group_lines(home_names))
     body.append(f'  - name: {quote(HOME_PICK)}')
@@ -427,10 +434,33 @@ def main():
             f"(need >= {MIN_HOME_NODES}) or no shared certificate found"
         )
 
-    # JP/KR first (video scheme), speed order kept inside each group.
-    ordered = [n for n in nodes if n["country"] in ("JP", "KR")]
-    ordered += [n for n in nodes if n["country"] not in ("JP", "KR")]
+    # Low-latency first: only low-ping, high-speed nodes. VPN Gate's
+    # Ping is the server's own reported value, not the phone's latency,
+    # but it is a good quality signal — Japan nodes report ~12 ms
+    # median vs ~31 ms for Korea, so JP dominates the top of the list.
+    # Sort by ping ascending, then speed descending; JP first.
+    fast = [
+        n
+        for n in nodes
+        if n["ping"] <= 30 and n["speed"] >= 50_000_000
+    ]
+    if len(fast) < MIN_HOME_NODES:
+        fast = [
+            n
+            for n in nodes
+            if n["ping"] <= 50 and n["speed"] >= 20_000_000
+        ]
+    pool = fast if len(fast) >= MIN_HOME_NODES else nodes
+    pool = sorted(pool, key=lambda n: (n["ping"], -n["speed"]))
+    ordered = [n for n in pool if n["country"] == "JP"]
+    ordered += [n for n in pool if n["country"] == "KR"]
+    ordered += [n for n in pool if n["country"] not in ("JP", "KR")]
     ordered = ordered[:MAX_HOME_NODES]
+    print(
+        f"latency filter: {len(fast)} nodes pass ping<=30 & speed>=50M "
+        f"(pool {len(pool)}), picking {len(ordered)}",
+        flush=True,
+    )
 
     counts = Counter(n["country"] for n in ordered)
     per_country = Counter()
@@ -450,7 +480,7 @@ def main():
         home_nodes,
         cert,
         stamp,
-        "本文件由 GitHub Actions 每天自动生成，未走 Cloudflare Worker/Pages；"
+        "本文件由 GitHub Actions 每 2 小时自动生成，未走 Cloudflare Worker/Pages；"
         "家宽节点来自公开 VPN Gate 清单",
     )
     with open("jk_home.yaml", "w", encoding="utf-8") as f:

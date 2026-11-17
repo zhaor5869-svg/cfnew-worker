@@ -1,7 +1,7 @@
 # cfnew 家宽订阅：CF 节点带路，落地是住宅宽带
 # 内核要 1.19.25 以上，老内核不认这类节点
 # 节点是网友共享的，掉线很正常，家宽自动会自己往下换
-# 生成时间 2026-11-18 00:54 CST，节点有效期以 VPN Gate 清单为准
+# 生成时间 2026-11-18 01:01 CST，节点有效期以 VPN Gate 清单为准
 # 本文件由 GitHub Actions 每 2 小时自动生成，未走 Cloudflare Worker/Pages；家宽节点来自公开 VPN Gate 清单
 mixed-port: 7890
 allow-lan: false

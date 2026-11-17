@@ -1,8 +1,8 @@
 # cfnew 家宽订阅：CF 节点带路，落地是住宅宽带
 # 内核要 1.19.25 以上，老内核不认这类节点
 # 节点是网友共享的，掉线很正常，家宽自动会自己往下换
-# 生成时间 2026-11-18 00:54 CST，节点有效期以 VPN Gate 清单为准
-# 移动版：前置为移动优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单
+# 生成时间 2026-11-18 01:01 CST，节点有效期以 VPN Gate 清单为准
+# 移动版：前置为移动优选 IP + 香港优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单
 mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -23,7 +23,7 @@ dns:
 proxies:
   - name: "移动优选-01"
     type: vless
-    server: "104.18.80.243"
+    server: "104.17.210.171"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -38,7 +38,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-02"
     type: vless
-    server: "104.17.219.208"
+    server: "104.18.94.107"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -53,7 +53,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-03"
     type: vless
-    server: "198.41.208.23"
+    server: "104.17.110.70"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -68,7 +68,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-04"
     type: vless
-    server: "104.17.101.175"
+    server: "104.17.215.102"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -83,7 +83,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-05"
     type: vless
-    server: "104.19.145.14"
+    server: "104.18.85.29"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -98,7 +98,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-06"
     type: vless
-    server: "104.19.144.212"
+    server: "104.19.150.163"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -189,6 +189,156 @@ proxies:
   - name: "移动优选-12"
     type: vless
     server: "104.19.149.171"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-01"
+    type: vless
+    server: "162.159.198.1"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-02"
+    type: vless
+    server: "8.210.207.226"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-03"
+    type: vless
+    server: "43.154.4.49"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-04"
+    type: vless
+    server: "152.32.172.70"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-05"
+    type: vless
+    server: "149.104.25.194"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-06"
+    type: vless
+    server: "149.30.255.132"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-07"
+    type: vless
+    server: "122.10.117.32"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-08"
+    type: vless
+    server: "95.41.7.96"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-09"
+    type: vless
+    server: "95.41.40.164"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "香港优选-10"
+    type: vless
+    server: "43.198.175.88"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -1321,6 +1471,16 @@ proxy-groups:
       - "移动优选-10"
       - "移动优选-11"
       - "移动优选-12"
+      - "香港优选-01"
+      - "香港优选-02"
+      - "香港优选-03"
+      - "香港优选-04"
+      - "香港优选-05"
+      - "香港优选-06"
+      - "香港优选-07"
+      - "香港优选-08"
+      - "香港优选-09"
+      - "香港优选-10"
       - "优选域名-01"
       - "优选域名-03"
       - "优选域名-05"
@@ -1362,6 +1522,16 @@ proxy-groups:
       - "移动优选-10"
       - "移动优选-11"
       - "移动优选-12"
+      - "香港优选-01"
+      - "香港优选-02"
+      - "香港优选-03"
+      - "香港优选-04"
+      - "香港优选-05"
+      - "香港优选-06"
+      - "香港优选-07"
+      - "香港优选-08"
+      - "香港优选-09"
+      - "香港优选-10"
       - "优选域名-01"
       - "优选域名-03"
       - "优选域名-05"

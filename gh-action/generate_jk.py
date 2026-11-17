@@ -63,7 +63,7 @@ VPNGATE_URLS = [
     "https://www.vpngate.net/api/iphone/",
     "http://www.vpngate.net/api/iphone/",
 ]
-MAX_HOME_NODES = 30
+MAX_HOME_NODES = 40
 MIN_HOME_NODES = 10
 FRONT_GROUP = "⚡ CF前置"
 LOW_LAT = "🚀 低延迟直连"
@@ -416,8 +416,8 @@ def build_document(front_nodes, home_nodes, cert, generated_stamp, extra_note):
     body.append(f'  - name: {quote(HOME_AUTO)}')
     body.append("    type: url-test")
     body.append("    url: https://www.gstatic.com/generate_204")
-    body.append("    interval: 600")
-    body.append("    tolerance: 50")
+    body.append("    interval: 300")
+    body.append("    tolerance: 30")
     body.append("    proxies:")
     body.append(group_lines(home_names))
     body.append(f'  - name: {quote(HOME_PICK)}')
@@ -497,29 +497,28 @@ def main():
             f"(need >= {MIN_HOME_NODES}) or no shared certificate found"
         )
 
-    # Quantity AND low latency: keep 30 nodes, but every one of them
-    # must pass the latency/quality bar. VPN Gate's Ping is the
-    # server's own reported value, not the phone's latency, but it is
-    # a good quality signal — Japan nodes report ~12 ms median vs
-    # ~31 ms for Korea, so JP dominates the top of the list.
-    # Sort by ping ascending, then speed descending; JP first.
-    # Extra nodes do NOT slow the user down: the 🏠 家宽自动 group
-    # is url-test, it measures all nodes and always uses the fastest
-    # one — the rest are just backups.
+    # Stability first: keep up to 40 nodes. Volunteer home nodes die
+    # within hours, so a bigger pool means more live backups when
+    # nodes drop. Every node must still pass a quality bar
+    # (JP/KR, VPN Gate ping <= 50 ms, speed >= 20 Mbps), and the
+    # 🏠 家宽自动 url-test group measures all of them on the phone
+    # and only uses the fastest alive one — extra nodes are spares,
+    # they never slow anything down. Sort by ping ascending, then
+    # speed descending; JP first.
     fast = [
         n
         for n in nodes
         if n["country"] in ("JP", "KR")
-        and n["ping"] <= 30
-        and n["speed"] >= 50_000_000
+        and n["ping"] <= 50
+        and n["speed"] >= 20_000_000
     ]
     if len(fast) < MIN_HOME_NODES:
         fast = [
             n
             for n in nodes
             if n["country"] in ("JP", "KR")
-            and n["ping"] <= 50
-            and n["speed"] >= 20_000_000
+            and n["ping"] <= 80
+            and n["speed"] >= 10_000_000
         ]
     pool = fast if len(fast) >= MIN_HOME_NODES else nodes
     pool = sorted(pool, key=lambda n: (n["ping"], -n["speed"]))
@@ -528,7 +527,7 @@ def main():
     ordered += [n for n in pool if n["country"] not in ("JP", "KR")]
     ordered = ordered[:MAX_HOME_NODES]
     print(
-        f"latency filter: {len(fast)} nodes pass ping<=30 & speed>=50M "
+        f"stability filter: {len(fast)} nodes pass ping<=50 & speed>=20M "
         f"(pool {len(pool)}), picking {len(ordered)}",
         flush=True,
     )

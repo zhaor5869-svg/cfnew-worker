@@ -434,36 +434,29 @@ def main():
             f"(need >= {MIN_HOME_NODES}) or no shared certificate found"
         )
 
-    # Low-latency first: only low-ping, high-speed nodes. VPN Gate's
-    # Ping is the server's own reported value, not the phone's latency,
-    # but it is a good quality signal — Japan nodes report ~12 ms
-    # median vs ~31 ms for Korea, so JP dominates the top of the list.
-    # Sort by ping ascending, then speed descending; JP only for the
-    # strict tier (closest to China, lowest transit delay).
-    strict = [
+    # Quantity AND low latency: keep 30 nodes, but every one of them
+    # must pass the latency/quality bar. VPN Gate's Ping is the
+    # server's own reported value, not the phone's latency, but it is
+    # a good quality signal — Japan nodes report ~12 ms median vs
+    # ~31 ms for Korea, so JP dominates the top of the list.
+    # Sort by ping ascending, then speed descending; JP first.
+    # Extra nodes do NOT slow the user down: the 🏠 家宽自动 group
+    # is url-test, it measures all nodes and always uses the fastest
+    # one — the rest are just backups.
+    fast = [
         n
         for n in nodes
-        if n["country"] == "JP" and n["ping"] <= 15 and n["speed"] >= 100_000_000
+        if n["country"] in ("JP", "KR")
+        and n["ping"] <= 30
+        and n["speed"] >= 50_000_000
     ]
-    if len(strict) >= MIN_HOME_NODES:
-        fast = strict
-    else:
-        fast = [
-            n
-            for n in nodes
-            if n["ping"] <= 20 and n["speed"] >= 50_000_000
-        ]
     if len(fast) < MIN_HOME_NODES:
         fast = [
             n
             for n in nodes
-            if n["ping"] <= 30 and n["speed"] >= 50_000_000
-        ]
-    if len(fast) < MIN_HOME_NODES:
-        fast = [
-            n
-            for n in nodes
-            if n["ping"] <= 50 and n["speed"] >= 20_000_000
+            if n["country"] in ("JP", "KR")
+            and n["ping"] <= 50
+            and n["speed"] >= 20_000_000
         ]
     pool = fast if len(fast) >= MIN_HOME_NODES else nodes
     pool = sorted(pool, key=lambda n: (n["ping"], -n["speed"]))
@@ -472,8 +465,8 @@ def main():
     ordered += [n for n in pool if n["country"] not in ("JP", "KR")]
     ordered = ordered[:MAX_HOME_NODES]
     print(
-        f"latency filter: strict JP ping<=15 & speed>=100M gave "
-        f"{len(strict)}; pool {len(pool)}, picking {len(ordered)}",
+        f"latency filter: {len(fast)} nodes pass ping<=30 & speed>=50M "
+        f"(pool {len(pool)}), picking {len(ordered)}",
         flush=True,
     )
 

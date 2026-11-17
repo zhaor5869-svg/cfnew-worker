@@ -55,6 +55,7 @@ VPNGATE_URLS = [
 MAX_HOME_NODES = 30
 MIN_HOME_NODES = 10
 FRONT_GROUP = "⚡ CF前置"
+LOW_LAT = "🚀 低延迟直连"
 HOME_AUTO = "🏠 家宽自动"
 HOME_PICK = "🏠 家宽节点"
 MAIN_PICK = "🚀 节点选择"
@@ -352,6 +353,17 @@ def build_document(front_nodes, home_nodes, cert, generated_stamp, extra_note):
     body.append("    tolerance: 50")
     body.append("    proxies:")
     body.append(group_lines(front_names))
+    # Direct low-latency group: the same front VLESS nodes, used
+    # WITHOUT the home-broadband chain. One hop instead of two, so
+    # latency on China Mobile data is far lower — this is the fast
+    # path; the home chain stays for when a residential IP is needed.
+    body.append(f'  - name: {quote(LOW_LAT)}')
+    body.append("    type: url-test")
+    body.append("    url: https://www.gstatic.com/generate_204")
+    body.append("    interval: 300")
+    body.append("    tolerance: 50")
+    body.append("    proxies:")
+    body.append(group_lines(front_names))
     body.append(f'  - name: {quote(HOME_AUTO)}')
     body.append("    type: url-test")
     body.append("    url: https://www.gstatic.com/generate_204")
@@ -366,6 +378,7 @@ def build_document(front_nodes, home_nodes, cert, generated_stamp, extra_note):
     body.append(f'  - name: {quote(MAIN_PICK)}')
     body.append("    type: select")
     body.append("    proxies:")
+    body.append(f'      - {quote(LOW_LAT)}')
     body.append(f'      - {quote(HOME_AUTO)}')
     body.append(f'      - {quote(HOME_PICK)}')
     body.append(f'      - {quote(FRONT_GROUP)}')

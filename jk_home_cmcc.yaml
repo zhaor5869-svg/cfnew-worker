@@ -1,8 +1,8 @@
 # cfnew 家宽订阅：CF 节点带路，落地是住宅宽带
 # 内核要 1.19.25 以上，老内核不认这类节点
 # 节点是网友共享的，掉线很正常，家宽自动会自己往下换
-# 生成时间 2026-11-18 00:29 CST，节点有效期以 VPN Gate 清单为准
-# 移动版：前置不走优选域名，直连 cfnew-aeo.pages.dev / cfnew-bq1.pages.dev；家宽节点来自公开 VPN Gate 清单
+# 生成时间 2026-11-18 00:32 CST，节点有效期以 VPN Gate 清单为准
+# 移动版：前置为 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单
 mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -21,6 +21,321 @@ dns:
     - https://1.1.1.1/dns-query
 
 proxies:
+  - name: "优选域名-01"
+    type: vless
+    server: "cloudflare.182682.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-03"
+    type: vless
+    server: "speed.marisalnc.com"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-05"
+    type: vless
+    server: "freeyx.cloudflare88.eu.org"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-07"
+    type: vless
+    server: "bestcf.top"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-09"
+    type: vless
+    server: "cdn.2020111.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-11"
+    type: vless
+    server: "cfip.cfcdn.vip"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-13"
+    type: vless
+    server: "cf.0sm.com"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-15"
+    type: vless
+    server: "cf.090227.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-17"
+    type: vless
+    server: "cf.zhetengsha.eu.org"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-19"
+    type: vless
+    server: "cloudflare.9jy.cc"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-21"
+    type: vless
+    server: "cf.zerone-cdn.pp.ua"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-23"
+    type: vless
+    server: "cfip.1323123.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-25"
+    type: vless
+    server: "cnamefuckxxs.yuchen.icu"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-27"
+    type: vless
+    server: "cloudflare-ip.mofashi.ltd"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-29"
+    type: vless
+    server: "115155.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-31"
+    type: vless
+    server: "cname.xirancdn.us"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-33"
+    type: vless
+    server: "f3058171cad.002404.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-35"
+    type: vless
+    server: "8.889288.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-37"
+    type: vless
+    server: "cdn.tzpro.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-39"
+    type: vless
+    server: "cf.877771.xyz"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "优选域名-41"
+    type: vless
+    server: "xn--b6gac.eu.org"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
   - name: "直连-移动-01"
     type: vless
     server: "cfnew-aeo.pages.dev"
@@ -53,8 +368,8 @@ proxies:
         Host: "cfnew-bq1.pages.dev"
   - name: "🏠 JP-家宽-01"
     type: openvpn
-    server: 223.132.252.176
-    port: 1551
+    server: 164.70.179.124
+    port: 1433
     proto: tcp
     username: vpn
     password: vpn
@@ -230,8 +545,8 @@ proxies:
     key: *jkkey
   - name: "🏠 JP-家宽-07"
     type: openvpn
-    server: 126.208.100.178
-    port: 1256
+    server: 116.67.212.245
+    port: 1254
     proto: tcp
     username: vpn
     password: vpn
@@ -264,8 +579,8 @@ proxies:
     key: *jkkey
   - name: "🏠 JP-家宽-09"
     type: openvpn
-    server: 60.73.48.68
-    port: 1680
+    server: 180.11.151.249
+    port: 1716
     proto: tcp
     username: vpn
     password: vpn
@@ -366,8 +681,8 @@ proxies:
     key: *jkkey
   - name: "🏠 JP-家宽-15"
     type: openvpn
-    server: 114.190.203.143
-    port: 1250
+    server: 115.179.206.241
+    port: 443
     proto: tcp
     username: vpn
     password: vpn
@@ -383,8 +698,8 @@ proxies:
     key: *jkkey
   - name: "🏠 JP-家宽-16"
     type: openvpn
-    server: 103.137.107.239
-    port: 1497
+    server: 114.190.203.143
+    port: 1250
     proto: tcp
     username: vpn
     password: vpn
@@ -399,23 +714,6 @@ proxies:
     cert: *jkcert
     key: *jkkey
   - name: "🏠 JP-家宽-17"
-    type: openvpn
-    server: 126.36.178.145
-    port: 1882
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-18"
     type: openvpn
     server: 59.135.18.252
     port: 1544
@@ -434,7 +732,7 @@ proxies:
     key: *jkkey
   - name: "🏠 KR-家宽-01"
     type: openvpn
-    server: 220.95.95.99
+    server: 125.134.49.9
     port: 995
     proto: tcp
     username: vpn
@@ -451,7 +749,7 @@ proxies:
     key: *jkkey
   - name: "🏠 KR-家宽-02"
     type: openvpn
-    server: 221.161.52.235
+    server: 220.95.95.99
     port: 995
     proto: tcp
     username: vpn
@@ -468,7 +766,7 @@ proxies:
     key: *jkkey
   - name: "🏠 KR-家宽-03"
     type: openvpn
-    server: 220.123.111.167
+    server: 221.161.52.235
     port: 995
     proto: tcp
     username: vpn
@@ -485,6 +783,23 @@ proxies:
     key: *jkkey
   - name: "🏠 KR-家宽-04"
     type: openvpn
+    server: 220.123.111.167
+    port: 995
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-05"
+    type: openvpn
     server: 121.144.133.251
     port: 1486
     proto: tcp
@@ -500,7 +815,7 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 KR-家宽-05"
+  - name: "🏠 KR-家宽-06"
     type: openvpn
     server: 220.125.120.91
     port: 995
@@ -517,26 +832,9 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 KR-家宽-06"
-    type: openvpn
-    server: 121.185.107.63
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
   - name: "🏠 KR-家宽-07"
     type: openvpn
-    server: 221.156.184.248
+    server: 121.185.107.63
     port: 995
     proto: tcp
     username: vpn
@@ -570,6 +868,23 @@ proxies:
     key: *jkkey
   - name: "🏠 KR-家宽-09"
     type: openvpn
+    server: 221.154.80.182
+    port: 1909
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-10"
+    type: openvpn
     server: 211.198.142.177
     port: 995
     proto: tcp
@@ -585,7 +900,7 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 KR-家宽-10"
+  - name: "🏠 KR-家宽-11"
     type: openvpn
     server: 121.152.58.166
     port: 1609
@@ -602,7 +917,7 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 KR-家宽-11"
+  - name: "🏠 KR-家宽-12"
     type: openvpn
     server: 220.123.230.229
     port: 1630
@@ -627,6 +942,27 @@ proxy-groups:
     interval: 300
     tolerance: 50
     proxies:
+      - "优选域名-01"
+      - "优选域名-03"
+      - "优选域名-05"
+      - "优选域名-07"
+      - "优选域名-09"
+      - "优选域名-11"
+      - "优选域名-13"
+      - "优选域名-15"
+      - "优选域名-17"
+      - "优选域名-19"
+      - "优选域名-21"
+      - "优选域名-23"
+      - "优选域名-25"
+      - "优选域名-27"
+      - "优选域名-29"
+      - "优选域名-31"
+      - "优选域名-33"
+      - "优选域名-35"
+      - "优选域名-37"
+      - "优选域名-39"
+      - "优选域名-41"
       - "直连-移动-01"
       - "直连-移动-02"
   - name: "🏠 家宽自动"
@@ -652,7 +988,6 @@ proxy-groups:
       - "🏠 JP-家宽-15"
       - "🏠 JP-家宽-16"
       - "🏠 JP-家宽-17"
-      - "🏠 JP-家宽-18"
       - "🏠 KR-家宽-01"
       - "🏠 KR-家宽-02"
       - "🏠 KR-家宽-03"
@@ -664,6 +999,7 @@ proxy-groups:
       - "🏠 KR-家宽-09"
       - "🏠 KR-家宽-10"
       - "🏠 KR-家宽-11"
+      - "🏠 KR-家宽-12"
   - name: "🏠 家宽节点"
     type: select
     proxies:
@@ -684,7 +1020,6 @@ proxy-groups:
       - "🏠 JP-家宽-15"
       - "🏠 JP-家宽-16"
       - "🏠 JP-家宽-17"
-      - "🏠 JP-家宽-18"
       - "🏠 KR-家宽-01"
       - "🏠 KR-家宽-02"
       - "🏠 KR-家宽-03"
@@ -696,6 +1031,7 @@ proxy-groups:
       - "🏠 KR-家宽-09"
       - "🏠 KR-家宽-10"
       - "🏠 KR-家宽-11"
+      - "🏠 KR-家宽-12"
   - name: "🚀 节点选择"
     type: select
     proxies:

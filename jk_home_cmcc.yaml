@@ -1,8 +1,8 @@
 # cfnew 家宽订阅：CF 节点带路，落地是住宅宽带
 # 内核要 1.19.25 以上，老内核不认这类节点
 # 节点是网友共享的，掉线很正常，家宽自动会自己往下换
-# 生成时间 2026-11-18 00:38 CST，节点有效期以 VPN Gate 清单为准
-# 移动版：前置为 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单
+# 生成时间 2026-11-18 00:43 CST，节点有效期以 VPN Gate 清单为准
+# 移动版：前置为移动优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单
 mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -21,6 +21,186 @@ dns:
     - https://1.1.1.1/dns-query
 
 proxies:
+  - name: "移动优选-01"
+    type: vless
+    server: "104.16.246.132"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-02"
+    type: vless
+    server: "104.18.86.131"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-03"
+    type: vless
+    server: "104.18.94.238"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-04"
+    type: vless
+    server: "104.19.144.212"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-05"
+    type: vless
+    server: "104.18.83.92"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-06"
+    type: vless
+    server: "104.18.80.243"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-07"
+    type: vless
+    server: "104.17.22.231"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-08"
+    type: vless
+    server: "104.17.125.98"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-09"
+    type: vless
+    server: "104.16.240.177"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-10"
+    type: vless
+    server: "104.19.34.37"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-11"
+    type: vless
+    server: "104.17.187.57"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
+  - name: "移动优选-12"
+    type: vless
+    server: "104.19.149.171"
+    port: 443
+    uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
+    udp: true
+    tls: true
+    client-fingerprint: "chrome"
+    servername: "cfnew-aeo.pages.dev"
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: "/?ed=2048"
+      headers:
+        Host: "cfnew-aeo.pages.dev"
   - name: "优选域名-01"
     type: vless
     server: "cloudflare.182682.xyz"
@@ -942,6 +1122,18 @@ proxy-groups:
     interval: 300
     tolerance: 50
     proxies:
+      - "移动优选-01"
+      - "移动优选-02"
+      - "移动优选-03"
+      - "移动优选-04"
+      - "移动优选-05"
+      - "移动优选-06"
+      - "移动优选-07"
+      - "移动优选-08"
+      - "移动优选-09"
+      - "移动优选-10"
+      - "移动优选-11"
+      - "移动优选-12"
       - "优选域名-01"
       - "优选域名-03"
       - "优选域名-05"
@@ -971,6 +1163,18 @@ proxy-groups:
     interval: 300
     tolerance: 50
     proxies:
+      - "移动优选-01"
+      - "移动优选-02"
+      - "移动优选-03"
+      - "移动优选-04"
+      - "移动优选-05"
+      - "移动优选-06"
+      - "移动优选-07"
+      - "移动优选-08"
+      - "移动优选-09"
+      - "移动优选-10"
+      - "移动优选-11"
+      - "移动优选-12"
       - "优选域名-01"
       - "优选域名-03"
       - "优选域名-05"

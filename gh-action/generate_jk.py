@@ -58,6 +58,17 @@ CMCC_IP_URLS = [
     "https://090227.pages.dev/bestcf?isp=cmcc&ips=50",
 ]
 MAX_CMCC_IPS = 12
+# Hong Kong landing IPs (public BestCF lists). China Mobile routes
+# to Hong Kong fastest, so HK front IPs are the best first hop for
+# CM data. Verified 2026-11-18: every IP in these lists answers
+# the Pages terminal HTML when queried with SNI cfnew-aeo.pages.dev
+# (they pass the TLS stream through to the Cloudflare edge), so
+# they work as front servers exactly like the CMCC IPs.
+HK_IP_URLS = [
+    "https://bestcf.pages.dev/tiancheng/hk.txt",
+    "https://bestcf.pages.dev/tiancheng2/hk.txt",
+]
+MAX_HK_IPS = 10
 DEFAULT_UUID = "351c9981-04b6-4103-aa4b-864aa9c91469"
 VPNGATE_URLS = [
     "https://www.vpngate.net/api/iphone/",
@@ -276,6 +287,24 @@ def fetch_cmcc_ips():
         if len(found) >= MAX_CMCC_IPS:
             break
     return found[:MAX_CMCC_IPS]
+
+
+def fetch_hk_ips():
+    """Fetch Hong Kong landing IPs from public BestCF lists.
+    Returns a deduplicated list of IPv4 strings (may be empty)."""
+    found = []
+    for url in HK_IP_URLS:
+        try:
+            text = fetch_text(url, timeout=20)
+        except (urllib.error.URLError, RuntimeError, OSError) as exc:
+            print(f"HK IP list fetch failed ({url}): {exc}", flush=True)
+            continue
+        for ip in re.findall(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", text):
+            if ip not in found:
+                found.append(ip)
+        if len(found) >= MAX_HK_IPS:
+            break
+    return found[:MAX_HK_IPS]
 
 
 def quote(value):
@@ -567,10 +596,16 @@ def main():
     # fastest one.
     cmcc_ips = fetch_cmcc_ips()
     print(f"CMCC optimized front IPs: {len(cmcc_ips)}", flush=True)
+    hk_ips = fetch_hk_ips()
+    print(f"HK front IPs: {len(hk_ips)}", flush=True)
     sni_host = "cfnew-aeo.pages.dev"
     cmcc_front = [
         cmcc_ip_front_node(f"移动优选-{i + 1:02d}", ip, sni_host)
         for i, ip in enumerate(cmcc_ips)
+    ]
+    cmcc_front += [
+        cmcc_ip_front_node(f"香港优选-{i + 1:02d}", ip, sni_host)
+        for i, ip in enumerate(hk_ips)
     ]
     cmcc_front += list(front)
     cmcc_front += [direct_front_node(name, host) for name, host in DIRECT_FRONT]
@@ -579,7 +614,7 @@ def main():
         home_nodes,
         cert,
         stamp,
-        "移动版：前置为移动优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；"
+        "移动版：前置为移动优选 IP + 香港优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；"
         "家宽节点来自公开 VPN Gate 清单",
     )
     with open("jk_home_cmcc.yaml", "w", encoding="utf-8") as f:

@@ -47,6 +47,17 @@ FRONT_SUB_URL = (
     "https://cfnew-aeo.pages.dev/351c9981-04b6-4103-aa4b-864aa9c91469"
     "/sub?target=clash"
 )
+# China Mobile optimized Cloudflare edge IPs (public lists, refreshed
+# by their maintainers). The uouin API the video's worker code calls
+# for these is dead (its old key returns 密钥错误 in all variants
+# tried 2026-11-18), so the generator fetches these public lists
+# instead. These IPs are the first hop for CM data — a fast front
+# here lowers the whole home-broadband chain's latency.
+CMCC_IP_URLS = [
+    "https://addressesapi.090227.xyz/cmcc",
+    "https://090227.pages.dev/bestcf?isp=cmcc&ips=50",
+]
+MAX_CMCC_IPS = 12
 DEFAULT_UUID = "351c9981-04b6-4103-aa4b-864aa9c91469"
 VPNGATE_URLS = [
     "https://www.vpngate.net/api/iphone/",
@@ -227,6 +238,44 @@ def direct_front_node(name, host):
         "network": "ws",
         "ws-opts": {"path": "/?ed=2048", "headers": {"Host": host}},
     }
+
+
+def cmcc_ip_front_node(name, ip, sni_host):
+    """A China Mobile optimized Cloudflare edge IP as a front node:
+    connect to the IP directly, TLS SNI + WS Host stay the Pages
+    domain so the certificate checks out."""
+    return {
+        "name": name,
+        "type": "vless",
+        "server": ip,
+        "port": 443,
+        "uuid": DEFAULT_UUID,
+        "udp": True,
+        "tls": True,
+        "client-fingerprint": "chrome",
+        "servername": sni_host,
+        "skip-cert-verify": False,
+        "network": "ws",
+        "ws-opts": {"path": "/?ed=2048", "headers": {"Host": sni_host}},
+    }
+
+
+def fetch_cmcc_ips():
+    """Fetch China Mobile optimized Cloudflare IPs from public lists.
+    Returns a deduplicated list of IPv4 strings (may be empty)."""
+    found = []
+    for url in CMCC_IP_URLS:
+        try:
+            text = fetch_text(url, timeout=20)
+        except (urllib.error.URLError, RuntimeError, OSError) as exc:
+            print(f"CMCC IP list fetch failed ({url}): {exc}", flush=True)
+            continue
+        for ip in re.findall(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", text):
+            if ip not in found:
+                found.append(ip)
+        if len(found) >= MAX_CMCC_IPS:
+            break
+    return found[:MAX_CMCC_IPS]
 
 
 def quote(value):
@@ -512,22 +561,26 @@ def main():
     # phone -> Cloudflare hop is the first hop of the whole chain, and
     # CM's routing to Cloudflare's anycast edge is often poor, while
     # some preferred-domain IPs route CM -> HK/JP/SG much faster.
-    # So the CM front is BOTH the 21 preferred-domain nodes AND the
-    # 2 direct pages.dev nodes; the ⚡ CF前置 url-test group measures
+    # So the CM front is, in order: CM-optimized edge IPs (fastest
+    # first hop for CM), the 21 preferred-domain nodes, and the 2
+    # direct pages.dev nodes. The ⚡ CF前置 url-test group measures
     # them all on the phone's own CM connection and always uses the
-    # fastest one. (Earlier the 2 direct nodes alone were used because
-    # the preferred domains had failed a direct latency test — but as
-    # a dialer-proxy front they only carry the OpenVPN TCP stream, and
-    # url-test picks whichever is actually fastest on CM.)
-    cmcc_front = list(front) + [
-        direct_front_node(name, host) for name, host in DIRECT_FRONT
+    # fastest one.
+    cmcc_ips = fetch_cmcc_ips()
+    print(f"CMCC optimized front IPs: {len(cmcc_ips)}", flush=True)
+    sni_host = "cfnew-aeo.pages.dev"
+    cmcc_front = [
+        cmcc_ip_front_node(f"移动优选-{i + 1:02d}", ip, sni_host)
+        for i, ip in enumerate(cmcc_ips)
     ]
+    cmcc_front += list(front)
+    cmcc_front += [direct_front_node(name, host) for name, host in DIRECT_FRONT]
     doc_cmcc = build_document(
         cmcc_front,
         home_nodes,
         cert,
         stamp,
-        "移动版：前置为 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；"
+        "移动版：前置为移动优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；"
         "家宽节点来自公开 VPN Gate 清单",
     )
     with open("jk_home_cmcc.yaml", "w", encoding="utf-8") as f:

@@ -438,12 +438,27 @@ def main():
     # Ping is the server's own reported value, not the phone's latency,
     # but it is a good quality signal — Japan nodes report ~12 ms
     # median vs ~31 ms for Korea, so JP dominates the top of the list.
-    # Sort by ping ascending, then speed descending; JP first.
-    fast = [
+    # Sort by ping ascending, then speed descending; JP only for the
+    # strict tier (closest to China, lowest transit delay).
+    strict = [
         n
         for n in nodes
-        if n["ping"] <= 30 and n["speed"] >= 50_000_000
+        if n["country"] == "JP" and n["ping"] <= 15 and n["speed"] >= 100_000_000
     ]
+    if len(strict) >= MIN_HOME_NODES:
+        fast = strict
+    else:
+        fast = [
+            n
+            for n in nodes
+            if n["ping"] <= 20 and n["speed"] >= 50_000_000
+        ]
+    if len(fast) < MIN_HOME_NODES:
+        fast = [
+            n
+            for n in nodes
+            if n["ping"] <= 30 and n["speed"] >= 50_000_000
+        ]
     if len(fast) < MIN_HOME_NODES:
         fast = [
             n
@@ -457,8 +472,8 @@ def main():
     ordered += [n for n in pool if n["country"] not in ("JP", "KR")]
     ordered = ordered[:MAX_HOME_NODES]
     print(
-        f"latency filter: {len(fast)} nodes pass ping<=30 & speed>=50M "
-        f"(pool {len(pool)}), picking {len(ordered)}",
+        f"latency filter: strict JP ping<=15 & speed>=100M gave "
+        f"{len(strict)}; pool {len(pool)}, picking {len(ordered)}",
         flush=True,
     )
 

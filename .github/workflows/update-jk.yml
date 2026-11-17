@@ -1,6 +1,6 @@
-# 每 2 小时自动刷新家宽节点（CFnew v3.1 家宽链式，离线生成版）
+# 每 1 小时自动刷新家宽节点（CFnew v3.1 家宽链式，离线生成版）
 #
-# 作用：每 2 小时运行 gh-action/generate_jk.py，重新拉取
+# 作用：每 1 小时运行 gh-action/generate_jk.py，重新拉取
 #   - Pages 订阅的前置节点（cfnew-aeo.pages.dev）
 #   - 公开 VPN Gate 清单的家宽落地节点
 # 重新生成 jk_home.yaml / jk_home_cmcc.yaml 并提交回 main 分支。
@@ -15,8 +15,8 @@ name: Refresh home-broadband nodes
 
 "on":
   schedule:
-    # 每 2 小时一次（UTC 0,2,4,...点，即 CST 8,10,12,...点）
-    - cron: "0 */2 * * *"
+    # 每 1 小时一次（UTC 每小时整点，即 CST 每小时整点）
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:

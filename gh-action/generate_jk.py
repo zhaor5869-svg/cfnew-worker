@@ -28,6 +28,11 @@ What it does (mirrors the logic in _worker.js: 解析家宽清单 /
      so the probe cannot distinguish live from dead SoftEther
      nodes. TCP + geo is the verification; the phone's url-test
      group remains the final check.)
+     Long-term stability: nodes that were already published in
+     consecutive runs are preferred (tracked in
+     gh-action/node_history.json, committed by the workflow), so
+     the subscription keeps the nodes that keep surviving instead
+     of churning to brand-new ones every hour.
   3. Writes jk_home.yaml (front = preferred-domain VLESS nodes) and
      jk_home_cmcc.yaml (front = preferred-domain VLESS nodes + 2 direct
      pages.dev nodes, China Mobile version — the url-test front group
@@ -50,6 +55,7 @@ live VPN Gate response or the live Pages subscription.
 import base64
 import binascii
 import json
+import os
 import re
 import socket
 import sys
@@ -108,6 +114,19 @@ MIN_HOME_NODES = 10
 VERIFY_TIMEOUT_S = 5.0
 VERIFY_WORKERS = 32
 VERIFY_CANDIDATES = 80
+# Stability tracking (long-term stability for the subscription):
+# volunteer home nodes die within hours, so prefer nodes that were
+# already published in consecutive runs — a node that survived the
+# last few hourly generations is far less likely to die in the next
+# hour than a brand-new one. The history lives in node_history.json
+# next to this script (committed by the workflow, so it persists
+# across runs). A node counts as "returning" if it was published
+# within the last 3 hours; entries older than 48 hours are pruned.
+HISTORY_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "node_history.json"
+)
+HISTORY_WINDOW_H = 3
+HISTORY_PRUNE_H = 48
 # Geolocation check (ip-api.com batch, free tier, 100 IPs/request):
 # VPN Gate's country is self-reported and can be stale, which is
 # why a "JP" node sometimes exits in Hong Kong. The published
@@ -651,6 +670,50 @@ def validate(path, expect_vless, expect_openvpn):
     return vless, home
 
 
+def load_history():
+    """Load node stability history: {ip: {"runs": int, "last": iso}}.
+
+    Missing or corrupt file means a fresh start (all nodes new).
+    """
+    try:
+        with open(HISTORY_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            return data
+    except (OSError, ValueError):
+        pass
+    return {}
+
+
+def save_history(history):
+    """Persist node stability history (best effort; never fail the run)."""
+    try:
+        with open(HISTORY_PATH, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=1, sort_keys=True)
+    except OSError as exc:
+        print(f"WARNING: could not save node history: {exc}", flush=True)
+
+
+def stable_runs_for(history, ip, now):
+    """Consecutive-run count for an IP, or 0 if it was not published
+    recently (within HISTORY_WINDOW_H hours)."""
+    prev = history.get(ip)
+    if not isinstance(prev, dict):
+        return 0
+    try:
+        last = datetime.fromisoformat(str(prev.get("last", "")))
+    except ValueError:
+        return 0
+    if last.tzinfo is None:
+        last = last.replace(tzinfo=timezone.utc)
+    if now - last <= timedelta(hours=HISTORY_WINDOW_H):
+        try:
+            return int(prev.get("runs", 0))
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
+
 def main():
     now_utc = datetime.now(timezone.utc)
     now_cst = now_utc + timedelta(hours=8)
@@ -713,7 +776,17 @@ def main():
             and n["speed"] >= 10_000_000
         ]
     pool = fast if len(fast) >= MIN_HOME_NODES else nodes
-    pool = sorted(pool, key=lambda n: (n["ping"], -n["speed"]))
+    # Prefer nodes that were already published in consecutive runs
+    # (stable), then lowest ping, then highest speed. Every pool node
+    # already passes the ping/speed bar, so stability is the
+    # tiebreaker that makes the subscription hold up over hours
+    # instead of churning to brand-new nodes each run.
+    history = load_history()
+    for n in pool:
+        n["_stable_runs"] = stable_runs_for(history, n["server"], now_utc)
+    pool = sorted(
+        pool, key=lambda n: (-n["_stable_runs"], n["ping"], -n["speed"])
+    )
     ordered = [n for n in pool if n["country"] == "JP"]
     ordered += [n for n in pool if n["country"] == "KR"]
     ordered += [n for n in pool if n["country"] not in ("JP", "KR")]
@@ -775,6 +848,38 @@ def main():
         )
         ordered = stage_nodes[:MAX_HOME_NODES]
     print(f"picking {len(ordered)} home nodes", flush=True)
+
+    # Record which nodes were published, so the next run can prefer
+    # the ones that keep surviving. A node counts as continuing only
+    # if it was published within the last HISTORY_WINDOW_H hours.
+    # Prune entries not seen in HISTORY_PRUNE_H hours.
+    now_iso = now_utc.isoformat()
+    returning = 0
+    for n in ordered:
+        prev_runs = n.get("_stable_runs", 0)
+        if prev_runs:
+            returning += 1
+        history[n["server"]] = {"runs": prev_runs + 1, "last": now_iso}
+    cutoff = now_utc - timedelta(hours=HISTORY_PRUNE_H)
+    for ip in list(history):
+        try:
+            last = datetime.fromisoformat(str(history[ip].get("last", "")))
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+        except ValueError:
+            last = None
+        if last is None or last < cutoff:
+            del history[ip]
+    save_history(history)
+    max_runs = max((n.get("_stable_runs", 0) for n in ordered), default=0)
+    print(
+        f"stability: {returning}/{len(ordered)} home nodes were published "
+        f"in a recent run (max consecutive runs: {max_runs})",
+        flush=True,
+    )
+    # Strip the internal stability key before building the document.
+    for n in ordered:
+        n.pop("_stable_runs", None)
 
     counts = Counter(n["country"] for n in ordered)
     per_country = Counter()

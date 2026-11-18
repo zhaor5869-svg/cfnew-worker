@@ -1,0 +1,30 @@
+# Test whether the CF front (VLESS proxy on Pages) can reach the
+# home-broadband nodes. Manual trigger only (workflow_dispatch).
+# Runs gh-action/test_front.py on the runner (direct internet) and
+# prints whether the front connects to example.com:80 and to the
+# first 3 openvpn nodes from the live subscription.
+name: Test front to home nodes
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-front:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install websocket-client pyyaml
+
+      - name: Test front to home nodes
+        run: python3 gh-action/test_front.py

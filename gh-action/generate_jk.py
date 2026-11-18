@@ -12,11 +12,19 @@ What it does (mirrors the logic in _worker.js: 解析家宽清单 /
      handshake it), parses the CSV, keeps only TCP OpenVPN configs,
      excludes the datacenter entries (hostname starting with
      "public-vpn", IP starting with "219.100.37."), keeps JP/KR with
-     VPN Gate ping <= 50 ms and speed >= 20 Mbps, then opens a real
-     TCP connection to each of the top 80 candidates and publishes
-     only the ones that answer (max 40 home nodes, JP first). If
-     fewer than 10 answer, it falls back to the unverified list so
-     the subscription never goes stale.
+     VPN Gate ping <= 50 ms and speed >= 20 Mbps, then verifies each
+     of the top 80 candidates in three stages: (a) a real TCP
+     connect, (b) a real OpenVPN handshake probe (send a
+     P_CONTROL_HARD_RESET_CLIENT_V2 packet and require the server's
+     P_CONTROL_HARD_RESET_SERVER_V2 reply — this catches servers
+     that accept TCP but cannot do OpenVPN), and (c) a geolocation
+     check of the server IP (ip-api.com) — the published country
+     label is the IP's real location, and any node whose real
+     location is not JP/KR (or disagrees with the VPN Gate label)
+     is dropped. Publishes only the nodes that pass (max 40 home
+     nodes, JP first). Each stage falls back to the previous
+     stage's list if too few pass, so the subscription never goes
+     stale.
   3. Writes jk_home.yaml (front = preferred-domain VLESS nodes) and
      jk_home_cmcc.yaml (front = preferred-domain VLESS nodes + 2 direct
      pages.dev nodes, China Mobile version — the url-test front group
@@ -38,9 +46,13 @@ live VPN Gate response or the live Pages subscription.
 
 import base64
 import binascii
+import json
+import os
 import re
 import socket
+import struct
 import sys
+import time
 import urllib.request
 import urllib.error
 from collections import Counter
@@ -95,6 +107,19 @@ MIN_HOME_NODES = 10
 VERIFY_TIMEOUT_S = 5.0
 VERIFY_WORKERS = 32
 VERIFY_CANDIDATES = 80
+# OpenVPN handshake probe: VPN Gate configs carry no tls-auth /
+# tls-crypt (verified 2026-11-18), so a plain hard-reset packet is
+# enough to prove the server speaks OpenVPN. A TCP connect alone
+# only proves the port is listening — servers that accept TCP but
+# never complete OpenVPN are the "dead on the phone" nodes.
+HS_TIMEOUT_S = 5.0
+HS_WORKERS = 32
+# Geolocation check (ip-api.com batch, free tier, 100 IPs/request):
+# VPN Gate's country is self-reported and can be stale, which is
+# why a "JP" node sometimes exits in Hong Kong. The published
+# label is the IP's real location from the geo database.
+GEO_API_URL = "http://ip-api.com/batch"
+GEO_TIMEOUT_S = 20
 FRONT_GROUP = "⚡ CF前置"
 LOW_LAT = "🚀 低延迟直连"
 HOME_AUTO = "🏠 家宽自动"
@@ -245,8 +270,6 @@ def tcp_check(node, timeout=VERIFY_TIMEOUT_S):
     A connect proves the host:port is listening right now. DNS
     failure, refusal, or timeout all count as dead.
     """
-    import time
-
     start = time.monotonic()
     try:
         sock = socket.create_connection(
@@ -285,6 +308,156 @@ def verify_home_nodes(candidates, timeout=VERIFY_TIMEOUT_S, workers=VERIFY_WORKE
     order = {id(node): i for i, node in enumerate(candidates)}
     verified.sort(key=lambda item: order[id(item[0])])
     return verified, checked, len(verified)
+
+
+def ovpn_handshake_check(node, timeout=HS_TIMEOUT_S):
+    """Send a real OpenVPN client hard-reset and require the
+    server's hard-reset reply.
+
+    OpenVPN over TCP frames every packet with a 2-byte big-endian
+    length. The client reset is P_CONTROL_HARD_RESET_CLIENT_V2
+    (opcode 1): [0x08][8-byte random session id][4-byte packet id 0].
+    A real OpenVPN server answers with
+    P_CONTROL_HARD_RESET_SERVER_V2 (opcode 2, first byte 0x10).
+    Returns (node, reply_ms) when the server answers, else None.
+    No tls-auth/tls-crypt is involved (VPN Gate configs carry none),
+    so a plain reset is enough.
+    """
+    start = time.monotonic()
+    try:
+        sock = socket.create_connection(
+            (node["server"], node["port"]), timeout=timeout
+        )
+    except (OSError, ValueError):
+        return None
+    try:
+        sock.settimeout(timeout)
+        session = os.urandom(8)
+        if session == b"\x00" * 8:
+            session = b"\x01" + session[1:]
+        packet = b"\x08" + session + b"\x00\x00\x00\x00"
+        sock.sendall(struct.pack(">H", len(packet)) + packet)
+        # Read the 2-byte length prefix, then the packet.
+        header = b""
+        while len(header) < 2:
+            chunk = sock.recv(2 - len(header))
+            if not chunk:
+                return None
+            header += chunk
+        (length,) = struct.unpack(">H", header)
+        if length < 1 or length > 2048:
+            return None
+        data = b""
+        while len(data) < length:
+            chunk = sock.recv(min(2048, length - len(data)))
+            if not chunk:
+                return None
+            data += chunk
+        if (data[0] >> 3) != 2:
+            return None
+        return node, int((time.monotonic() - start) * 1000)
+    except (OSError, ValueError, struct.error):
+        return None
+    finally:
+        try:
+            sock.close()
+        except OSError:
+            pass
+
+
+def probe_home_nodes(verified, timeout=HS_TIMEOUT_S, workers=HS_WORKERS):
+    """Run the OpenVPN handshake probe on every TCP-verified node.
+    Returns (probed, checked, passed) where probed is the list of
+    (node, reply_ms) for nodes that answered, in the same order as
+    the input (so the existing order is kept)."""
+    probed = []
+    checked = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(ovpn_handshake_check, node, timeout): node
+            for node, _ in verified
+        }
+        for future in as_completed(futures):
+            checked += 1
+            try:
+                result = future.result()
+            except Exception:
+                result = None
+            if result is not None:
+                probed.append(result)
+    order = {id(node): i for i, (node, _) in enumerate(verified)}
+    probed.sort(key=lambda item: order[id(item[0])])
+    return probed, checked, len(probed)
+
+
+def geo_lookup(ips, timeout=GEO_TIMEOUT_S):
+    """Look up the real country of each server IP via ip-api.com
+    batch (one request for up to 100 IPs). Returns {ip: countryCode}
+    or None if the lookup fails (caller then keeps the VPN Gate
+    labels instead of breaking the pipeline)."""
+    try:
+        body = json.dumps(
+            [{"query": ip, "fields": "query,countryCode"} for ip in ips]
+        ).encode()
+        req = urllib.request.Request(
+            GEO_API_URL,
+            data=body,
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            results = json.loads(resp.read().decode("utf-8"))
+        out = {}
+        for item in results:
+            if item.get("countryCode"):
+                out[item["query"]] = item["countryCode"].upper()
+        return out
+    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
+        print(f"geo lookup failed: {exc}", flush=True)
+        return None
+
+
+def geo_filter(nodes):
+    """Drop nodes whose server IP does not really geolocate to the
+    label's country (VPN Gate's country is self-reported and can be
+    stale — a "JP" node that really exits in Hong Kong is dropped
+    here), and drop anything that is not JP/KR. Returns
+    (kept, dropped) where kept is the filtered node list. If the
+    geo service is unreachable, returns the input unchanged."""
+    # Resolve any hostname servers to IPs for the lookup.
+    ip_by_server = {}
+    for node in nodes:
+        srv = node["server"]
+        if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", srv):
+            ip_by_server[srv] = srv
+        else:
+            try:
+                ip_by_server[srv] = socket.gethostbyname(srv)
+            except OSError:
+                ip_by_server[srv] = None
+    lookup_ips = sorted({ip for ip in ip_by_server.values() if ip})
+    geo = geo_lookup(lookup_ips) if lookup_ips else {}
+    if geo is None:
+        print("geo check skipped (service unreachable)", flush=True)
+        return list(nodes), []
+    kept, dropped = [], []
+    for node in nodes:
+        ip = ip_by_server.get(node["server"])
+        real = geo.get(ip) if ip else None
+        if real is None:
+            # No geo data for this IP: keep it (do not punish the
+            # node for a lookup gap) but log it.
+            print(f"geo: no data for {node['server']}, keeping", flush=True)
+            kept.append(node)
+        elif real == node["country"] and real in ("JP", "KR"):
+            kept.append(node)
+        else:
+            dropped.append((node, real))
+            print(
+                f"geo: dropping {node['server']} "
+                f"(label {node['country']}, real {real})",
+                flush=True,
+            )
+    return kept, dropped
 
 
 def fetch_front_nodes():
@@ -628,11 +801,14 @@ def main():
         flush=True,
     )
 
-    # Live verification: VPN Gate's ping/speed are self-reported and
-    # stale, so test the top candidates with a real TCP connect and
-    # publish only the ones that answer. If too few answer (the
-    # runner's network is having a bad day, not the nodes), fall back
-    # to the unverified list so the subscription never goes stale.
+    # Live verification, three stages — VPN Gate's ping/speed are
+    # self-reported and stale, so test the top candidates for real:
+    # (a) a real TCP connect, (b) a real OpenVPN handshake probe
+    # (a server that accepts TCP but never answers the OpenVPN
+    # reset is dead on the phone), and (c) a geolocation check of
+    # the server IP (the published label is the IP's real location).
+    # Each stage falls back to the previous stage's list if too few
+    # pass, so the subscription never goes stale.
     candidates = ordered[:VERIFY_CANDIDATES]
     verified, checked, passed = verify_home_nodes(candidates)
     if verified:
@@ -646,10 +822,10 @@ def main():
     else:
         print("live check: 0 nodes answered, using unverified list", flush=True)
     if passed >= MIN_HOME_NODES:
-        ordered = [node for node, _ in verified][:MAX_HOME_NODES]
+        stage_nodes = [node for node, _ in verified]
         verify_note = f"实测连通 {passed}/{checked} 个节点（TCP 握手，{stamp}）"
     else:
-        ordered = ordered[:MAX_HOME_NODES]
+        stage_nodes = ordered
         verify_note = (
             f"实测仅连通 {passed}/{checked} 个节点，已回退到未验证清单（{stamp}）"
         )
@@ -658,6 +834,57 @@ def main():
             f"falling back to unverified top {MAX_HOME_NODES}",
             flush=True,
         )
+
+    # Stage (b): OpenVPN handshake probe on the TCP-verified nodes.
+    if passed >= MIN_HOME_NODES:
+        probed, hs_checked, hs_passed = probe_home_nodes(verified)
+        if probed:
+            replies = sorted(ms for _, ms in probed)
+            print(
+                f"handshake check: {hs_passed}/{hs_checked} nodes "
+                f"answered the OpenVPN reset "
+                f"(reply {replies[0]}-{replies[-1]} ms, "
+                f"median {replies[len(replies) // 2]} ms)",
+                flush=True,
+            )
+        else:
+            print("handshake check: 0 nodes answered", flush=True)
+        if hs_passed >= MIN_HOME_NODES:
+            stage_nodes = [node for node, _ in probed]
+            verify_note = (
+                f"实测连通 {passed}/{checked} 个节点，"
+                f"OpenVPN 握手通过 {hs_passed}/{hs_checked} 个（{stamp}）"
+            )
+        else:
+            print(
+                "WARNING: too few handshake passes, "
+                "keeping the TCP-verified list",
+                flush=True,
+            )
+            verify_note = (
+                f"实测连通 {passed}/{checked} 个节点（TCP 握手），"
+                f"OpenVPN 握手仅通过 {hs_passed} 个，已回退到 TCP 验证清单（{stamp}）"
+            )
+
+    # Stage (c): geolocation check — drop nodes whose server IP
+    # does not really sit in the labelled country.
+    geo_kept, geo_dropped = geo_filter(stage_nodes)
+    if len(geo_kept) >= MIN_HOME_NODES:
+        if geo_dropped:
+            print(
+                f"geo check: dropped {len(geo_dropped)} mislabelled "
+                f"nodes, {len(geo_kept)} remain",
+                flush=True,
+            )
+            verify_note += f"，已剔除 {len(geo_dropped)} 个国家不符的节点"
+        ordered = geo_kept[:MAX_HOME_NODES]
+    else:
+        print(
+            "WARNING: geo check left too few nodes, "
+            "keeping the pre-geo list",
+            flush=True,
+        )
+        ordered = stage_nodes[:MAX_HOME_NODES]
     print(f"picking {len(ordered)} home nodes", flush=True)
 
     counts = Counter(n["country"] for n in ordered)

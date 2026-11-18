@@ -311,17 +311,22 @@ def verify_home_nodes(candidates, timeout=VERIFY_TIMEOUT_S, workers=VERIFY_WORKE
 
 
 def ovpn_handshake_check(node, timeout=HS_TIMEOUT_S):
-    """Send a real OpenVPN client hard-reset and require the
-    server's hard-reset reply.
+    """Send a real OpenVPN client hard-reset and require an
+    OpenVPN control reply.
 
     OpenVPN over TCP frames every packet with a 2-byte big-endian
     length. The client reset is P_CONTROL_HARD_RESET_CLIENT_V2
     (opcode 1): [0x08][8-byte random session id][4-byte packet id 0].
-    A real OpenVPN server answers with
-    P_CONTROL_HARD_RESET_SERVER_V2 (opcode 2, first byte 0x10).
-    Returns (node, reply_ms) when the server answers, else None.
-    No tls-auth/tls-crypt is involved (VPN Gate configs carry none),
-    so a plain reset is enough.
+    A real OpenVPN server answers with P_CONTROL_HARD_RESET_SERVER_V2
+    (opcode 2, first byte 0x10) or, on some implementations, with a
+    P_CONTROL packet carrying TLS data straight away (opcode 4/9,
+    payload starting with the TLS handshake marker 0x16). Either
+    proves the server speaks OpenVPN. Returns (node, reply_ms)
+    when the server answers, else None. No tls-auth/tls-crypt is
+    involved (VPN Gate configs carry none), so a plain reset is
+    enough. Every first byte actually received is recorded in
+    HS_SEEN for the run summary (diagnostics: what the servers
+    really send back).
     """
     start = time.monotonic()
     try:
@@ -346,6 +351,10 @@ def ovpn_handshake_check(node, timeout=HS_TIMEOUT_S):
             header += chunk
         (length,) = struct.unpack(">H", header)
         if length < 1 or length > 2048:
+            # Not a length-prefixed OpenVPN packet (e.g. an HTTP
+            # server answering with "HTTP/..."). Record what the
+            # server actually sent first, for the run summary.
+            HS_SEEN.append(header[0])
             return None
         data = b""
         while len(data) < length:
@@ -353,9 +362,15 @@ def ovpn_handshake_check(node, timeout=HS_TIMEOUT_S):
             if not chunk:
                 return None
             data += chunk
-        if (data[0] >> 3) != 2:
-            return None
-        return node, int((time.monotonic() - start) * 1000)
+        HS_SEEN.append(data[0])
+        opcode = data[0] >> 3
+        if opcode in (2, 8):
+            # Server hard-reset reply (V2 or V1).
+            return node, int((time.monotonic() - start) * 1000)
+        if opcode in (4, 9) and len(data) > 13 and data[13] == 0x16:
+            # Server sent TLS handshake data directly.
+            return node, int((time.monotonic() - start) * 1000)
+        return None
     except (OSError, ValueError, struct.error):
         return None
     finally:
@@ -363,6 +378,10 @@ def ovpn_handshake_check(node, timeout=HS_TIMEOUT_S):
             sock.close()
         except OSError:
             pass
+
+
+# First bytes received by the handshake probe, for the run summary.
+HS_SEEN = []
 
 
 def probe_home_nodes(verified, timeout=HS_TIMEOUT_S, workers=HS_WORKERS):
@@ -387,6 +406,11 @@ def probe_home_nodes(verified, timeout=HS_TIMEOUT_S, workers=HS_WORKERS):
                 probed.append(result)
     order = {id(node): i for i, (node, _) in enumerate(verified)}
     probed.sort(key=lambda item: order[id(item[0])])
+    if HS_SEEN:
+        # Diagnostics: what did the servers actually send back?
+        # (e.g. 0x10 = server reset, 0x48 = 'H' = HTTP-like reply)
+        seen = Counter(f"0x{b:02x}" for b in HS_SEEN)
+        print(f"handshake: first bytes seen: {dict(seen)}", flush=True)
     return probed, checked, len(probed)
 
 

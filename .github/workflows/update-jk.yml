@@ -4,9 +4,9 @@
 #   - Pages 订阅的前置节点（cfnew-aeo.pages.dev）
 #   - 公开 VPN Gate 清单的家宽落地节点
 # 重新生成 jk_home.yaml / jk_home_cmcc.yaml 并提交回 main 分支。
-# 用户在 Clash Meta 里订阅下面两个 raw 地址，更新时即拿到最新节点：
-#   https://raw.githubusercontent.com/dotechimemominivi21731-ui/cfnew-worker/main/jk_home.yaml
-#   https://raw.githubusercontent.com/dotechimemominivi21731-ui/cfnew-worker/main/jk_home_cmcc.yaml
+# 用户在 Clash Meta 里订阅下面两个地址，更新时即拿到最新节点：
+#   https://cdn.jsdelivr.net/gh/zhaor5869-svg/cfnew-worker@main/jk_home_cmcc.yaml
+#   https://raw.githubusercontent.com/zhaor5869-svg/cfnew-worker/main/jk_home_cmcc.yaml
 #
 # 安装：把本文件放到仓库的 .github/workflows/update-jk.yml，
 #       把 gh-action/generate_jk.py 放在仓库的 gh-action/ 目录下。
@@ -55,3 +55,11 @@ jobs:
             git commit -m "chore: refresh home-broadband nodes $(date -u +%F)"
             git push
           fi
+
+      - name: Purge jsDelivr cache
+        # jsDelivr 会把 gh 文件缓存几小时；不清理的话，用户订阅的
+        # jsDelivr 地址会一直拿到旧文件（旧文件里的节点很多已失效）。
+        # 清理后下次刷新订阅即拿到最新生成的文件。
+        run: |
+          curl -s "https://purge.jsdelivr.net/gh/zhaor5869-svg/cfnew-worker@main/jk_home.yaml" || true
+          curl -s "https://purge.jsdelivr.net/gh/zhaor5869-svg/cfnew-worker@main/jk_home_cmcc.yaml" || true

@@ -11,8 +11,12 @@ What it does (mirrors the logic in _worker.js: 解析家宽清单 /
      HTTP fallback — the source TLS is old and some runtimes cannot
      handshake it), parses the CSV, keeps only TCP OpenVPN configs,
      excludes the datacenter entries (hostname starting with
-     "public-vpn", IP starting with "219.100.37."), sorts by speed,
-     JP/KR first, max 30 home nodes.
+     "public-vpn", IP starting with "219.100.37."), keeps JP/KR with
+     VPN Gate ping <= 50 ms and speed >= 20 Mbps, then opens a real
+     TCP connection to each of the top 80 candidates and publishes
+     only the ones that answer (max 40 home nodes, JP first). If
+     fewer than 10 answer, it falls back to the unverified list so
+     the subscription never goes stale.
   3. Writes jk_home.yaml (front = preferred-domain VLESS nodes) and
      jk_home_cmcc.yaml (front = preferred-domain VLESS nodes + 2 direct
      pages.dev nodes, China Mobile version — the url-test front group
@@ -35,10 +39,12 @@ live VPN Gate response or the live Pages subscription.
 import base64
 import binascii
 import re
+import socket
 import sys
 import urllib.request
 import urllib.error
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
 
 import yaml
@@ -76,6 +82,19 @@ VPNGATE_URLS = [
 ]
 MAX_HOME_NODES = 40
 MIN_HOME_NODES = 10
+# Live verification (the video's detection idea, run from the Actions
+# runner instead of a Cloudflare Worker): VPN Gate's ping/speed are
+# self-reported and go stale fast, which is why the phone's speed test
+# kept hitting dead nodes. So before publishing, open a real TCP
+# connection to each candidate home node and keep only the ones that
+# answer. A successful TCP handshake proves the node is up and its
+# port is listening; it does not prove a full OpenVPN login works,
+# so the phone's url-test group is still the last check. Measured
+# from the runner, not from the phone, so connect time is only a
+# liveness signal, never a phone-latency promise.
+VERIFY_TIMEOUT_S = 5.0
+VERIFY_WORKERS = 32
+VERIFY_CANDIDATES = 80
 FRONT_GROUP = "⚡ CF前置"
 LOW_LAT = "🚀 低延迟直连"
 HOME_AUTO = "🏠 家宽自动"
@@ -217,6 +236,55 @@ def parse_vpngate(text):
             }
         )
     return nodes, cert, decode_failures
+
+
+def tcp_check(node, timeout=VERIFY_TIMEOUT_S):
+    """Open a real TCP connection to one home node and measure it.
+
+    Returns (node, connect_ms) when the node answers, else None.
+    A connect proves the host:port is listening right now. DNS
+    failure, refusal, or timeout all count as dead.
+    """
+    import time
+
+    start = time.monotonic()
+    try:
+        sock = socket.create_connection(
+            (node["server"], node["port"]), timeout=timeout
+        )
+    except (OSError, ValueError):
+        return None
+    try:
+        sock.close()
+    except OSError:
+        pass
+    return node, int((time.monotonic() - start) * 1000)
+
+
+def verify_home_nodes(candidates, timeout=VERIFY_TIMEOUT_S, workers=VERIFY_WORKERS):
+    """Test every candidate concurrently. Returns
+    (verified, checked, passed) where verified is the list of
+    (node, connect_ms) for nodes that answered, in the same order
+    the candidates were given (so the existing ping/speed order is
+    kept and the TCP check is purely a liveness filter)."""
+    verified = []
+    checked = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(tcp_check, node, timeout): node for node in candidates
+        }
+        for future in as_completed(futures):
+            checked += 1
+            try:
+                result = future.result()
+            except Exception:
+                result = None
+            if result is not None:
+                verified.append(result)
+    # Keep the candidates' original order (ping/speed, JP first).
+    order = {id(node): i for i, node in enumerate(candidates)}
+    verified.sort(key=lambda item: order[id(item[0])])
+    return verified, checked, len(verified)
 
 
 def fetch_front_nodes():
@@ -554,12 +622,43 @@ def main():
     ordered = [n for n in pool if n["country"] == "JP"]
     ordered += [n for n in pool if n["country"] == "KR"]
     ordered += [n for n in pool if n["country"] not in ("JP", "KR")]
-    ordered = ordered[:MAX_HOME_NODES]
     print(
         f"stability filter: {len(fast)} nodes pass ping<=50 & speed>=20M "
-        f"(pool {len(pool)}), picking {len(ordered)}",
+        f"(pool {len(pool)})",
         flush=True,
     )
+
+    # Live verification: VPN Gate's ping/speed are self-reported and
+    # stale, so test the top candidates with a real TCP connect and
+    # publish only the ones that answer. If too few answer (the
+    # runner's network is having a bad day, not the nodes), fall back
+    # to the unverified list so the subscription never goes stale.
+    candidates = ordered[:VERIFY_CANDIDATES]
+    verified, checked, passed = verify_home_nodes(candidates)
+    if verified:
+        latencies = sorted(ms for _, ms in verified)
+        print(
+            f"live check: {passed}/{checked} nodes answered TCP "
+            f"(connect {latencies[0]}-{latencies[-1]} ms, "
+            f"median {latencies[len(latencies) // 2]} ms)",
+            flush=True,
+        )
+    else:
+        print("live check: 0 nodes answered, using unverified list", flush=True)
+    if passed >= MIN_HOME_NODES:
+        ordered = [node for node, _ in verified][:MAX_HOME_NODES]
+        verify_note = f"实测连通 {passed}/{checked} 个节点（TCP 握手，{stamp}）"
+    else:
+        ordered = ordered[:MAX_HOME_NODES]
+        verify_note = (
+            f"实测仅连通 {passed}/{checked} 个节点，已回退到未验证清单（{stamp}）"
+        )
+        print(
+            "WARNING: too few verified nodes, "
+            f"falling back to unverified top {MAX_HOME_NODES}",
+            flush=True,
+        )
+    print(f"picking {len(ordered)} home nodes", flush=True)
 
     counts = Counter(n["country"] for n in ordered)
     per_country = Counter()
@@ -579,8 +678,9 @@ def main():
         home_nodes,
         cert,
         stamp,
-        "本文件由 GitHub Actions 每 2 小时自动生成，未走 Cloudflare Worker/Pages；"
-        "家宽节点来自公开 VPN Gate 清单",
+        "本文件由 GitHub Actions 自动生成，未走 Cloudflare Worker/Pages；"
+        "家宽节点来自公开 VPN Gate 清单；"
+        + verify_note,
     )
     with open("jk_home.yaml", "w", encoding="utf-8") as f:
         f.write(doc)
@@ -615,7 +715,8 @@ def main():
         cert,
         stamp,
         "移动版：前置为移动优选 IP + 香港优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；"
-        "家宽节点来自公开 VPN Gate 清单",
+        "家宽节点来自公开 VPN Gate 清单；"
+        + verify_note,
     )
     with open("jk_home_cmcc.yaml", "w", encoding="utf-8") as f:
         f.write(doc_cmcc)

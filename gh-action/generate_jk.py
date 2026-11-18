@@ -612,9 +612,16 @@ def build_document(front_nodes, home_nodes, cert, generated_stamp, extra_note):
     body.append(f'  - name: {quote(MAIN_PICK)}')
     body.append("    type: select")
     body.append("    proxies:")
-    body.append(f'      - {quote(LOW_LAT)}')
+    # Home chain FIRST: this subscription is for home broadband, so
+    # the default route must be the home chain, not the direct CF
+    # front. (Before 2026-11-18 the direct group was first, so a
+    # fresh load silently routed everything through Cloudflare's
+    # edge — Hong Kong / US datacenter IPs — even though the user
+    # had picked a "JP home" node. The direct group stays available
+    # as a manual fallback.)
     body.append(f'      - {quote(HOME_AUTO)}')
     body.append(f'      - {quote(HOME_PICK)}')
+    body.append(f'      - {quote(LOW_LAT)}')
     body.append(f'      - {quote(FRONT_GROUP)}')
     body.append('      - DIRECT')
     body.append("")

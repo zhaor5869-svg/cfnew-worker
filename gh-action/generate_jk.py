@@ -13,18 +13,21 @@ What it does (mirrors the logic in _worker.js: 解析家宽清单 /
      excludes the datacenter entries (hostname starting with
      "public-vpn", IP starting with "219.100.37."), keeps JP/KR with
      VPN Gate ping <= 50 ms and speed >= 20 Mbps, then verifies each
-     of the top 80 candidates in three stages: (a) a real TCP
-     connect, (b) a real OpenVPN handshake probe (send a
-     P_CONTROL_HARD_RESET_CLIENT_V2 packet and require the server's
-     P_CONTROL_HARD_RESET_SERVER_V2 reply — this catches servers
-     that accept TCP but cannot do OpenVPN), and (c) a geolocation
-     check of the server IP (ip-api.com) — the published country
-     label is the IP's real location, and any node whose real
-     location is not JP/KR (or disagrees with the VPN Gate label)
-     is dropped. Publishes only the nodes that pass (max 40 home
-     nodes, JP first). Each stage falls back to the previous
-     stage's list if too few pass, so the subscription never goes
-     stale.
+     of the top 80 candidates in two stages: (a) a real TCP
+     connect, and (b) a geolocation check of the server IP
+     (ip-api.com) — the published country label is the IP's real
+     location, and any node whose real location is not JP/KR (or
+     disagrees with the VPN Gate label) is dropped. Publishes only
+     the nodes that pass (max 40 home nodes, JP first). Each stage
+     falls back to the previous stage's list if too few pass, so
+     the subscription never goes stale.
+     (An OpenVPN handshake probe was tried 2026-11-18 and removed:
+     VPN Gate's SoftEther servers accept the TCP connection but
+     never answer a bare P_CONTROL_HARD_RESET_CLIENT_V2 packet —
+     two runner runs returned 0 passes and zero response bytes —
+     so the probe cannot distinguish live from dead SoftEther
+     nodes. TCP + geo is the verification; the phone's url-test
+     group remains the final check.)
   3. Writes jk_home.yaml (front = preferred-domain VLESS nodes) and
      jk_home_cmcc.yaml (front = preferred-domain VLESS nodes + 2 direct
      pages.dev nodes, China Mobile version — the url-test front group
@@ -47,10 +50,8 @@ live VPN Gate response or the live Pages subscription.
 import base64
 import binascii
 import json
-import os
 import re
 import socket
-import struct
 import sys
 import time
 import urllib.request
@@ -107,13 +108,6 @@ MIN_HOME_NODES = 10
 VERIFY_TIMEOUT_S = 5.0
 VERIFY_WORKERS = 32
 VERIFY_CANDIDATES = 80
-# OpenVPN handshake probe: VPN Gate configs carry no tls-auth /
-# tls-crypt (verified 2026-11-18), so a plain hard-reset packet is
-# enough to prove the server speaks OpenVPN. A TCP connect alone
-# only proves the port is listening — servers that accept TCP but
-# never complete OpenVPN are the "dead on the phone" nodes.
-HS_TIMEOUT_S = 5.0
-HS_WORKERS = 32
 # Geolocation check (ip-api.com batch, free tier, 100 IPs/request):
 # VPN Gate's country is self-reported and can be stale, which is
 # why a "JP" node sometimes exits in Hong Kong. The published
@@ -309,109 +303,6 @@ def verify_home_nodes(candidates, timeout=VERIFY_TIMEOUT_S, workers=VERIFY_WORKE
     verified.sort(key=lambda item: order[id(item[0])])
     return verified, checked, len(verified)
 
-
-def ovpn_handshake_check(node, timeout=HS_TIMEOUT_S):
-    """Send a real OpenVPN client hard-reset and require an
-    OpenVPN control reply.
-
-    OpenVPN over TCP frames every packet with a 2-byte big-endian
-    length. The client reset is P_CONTROL_HARD_RESET_CLIENT_V2
-    (opcode 1): [0x08][8-byte random session id][4-byte packet id 0].
-    A real OpenVPN server answers with P_CONTROL_HARD_RESET_SERVER_V2
-    (opcode 2, first byte 0x10) or, on some implementations, with a
-    P_CONTROL packet carrying TLS data straight away (opcode 4/9,
-    payload starting with the TLS handshake marker 0x16). Either
-    proves the server speaks OpenVPN. Returns (node, reply_ms)
-    when the server answers, else None. No tls-auth/tls-crypt is
-    involved (VPN Gate configs carry none), so a plain reset is
-    enough. Every first byte actually received is recorded in
-    HS_SEEN for the run summary (diagnostics: what the servers
-    really send back).
-    """
-    start = time.monotonic()
-    try:
-        sock = socket.create_connection(
-            (node["server"], node["port"]), timeout=timeout
-        )
-    except (OSError, ValueError):
-        return None
-    try:
-        sock.settimeout(timeout)
-        session = os.urandom(8)
-        if session == b"\x00" * 8:
-            session = b"\x01" + session[1:]
-        packet = b"\x08" + session + b"\x00\x00\x00\x00"
-        sock.sendall(struct.pack(">H", len(packet)) + packet)
-        # Read the 2-byte length prefix, then the packet.
-        header = b""
-        while len(header) < 2:
-            chunk = sock.recv(2 - len(header))
-            if not chunk:
-                return None
-            header += chunk
-        (length,) = struct.unpack(">H", header)
-        if length < 1 or length > 2048:
-            # Not a length-prefixed OpenVPN packet (e.g. an HTTP
-            # server answering with "HTTP/..."). Record what the
-            # server actually sent first, for the run summary.
-            HS_SEEN.append(header[0])
-            return None
-        data = b""
-        while len(data) < length:
-            chunk = sock.recv(min(2048, length - len(data)))
-            if not chunk:
-                return None
-            data += chunk
-        HS_SEEN.append(data[0])
-        opcode = data[0] >> 3
-        if opcode in (2, 8):
-            # Server hard-reset reply (V2 or V1).
-            return node, int((time.monotonic() - start) * 1000)
-        if opcode in (4, 9) and len(data) > 13 and data[13] == 0x16:
-            # Server sent TLS handshake data directly.
-            return node, int((time.monotonic() - start) * 1000)
-        return None
-    except (OSError, ValueError, struct.error):
-        return None
-    finally:
-        try:
-            sock.close()
-        except OSError:
-            pass
-
-
-# First bytes received by the handshake probe, for the run summary.
-HS_SEEN = []
-
-
-def probe_home_nodes(verified, timeout=HS_TIMEOUT_S, workers=HS_WORKERS):
-    """Run the OpenVPN handshake probe on every TCP-verified node.
-    Returns (probed, checked, passed) where probed is the list of
-    (node, reply_ms) for nodes that answered, in the same order as
-    the input (so the existing order is kept)."""
-    probed = []
-    checked = 0
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {
-            pool.submit(ovpn_handshake_check, node, timeout): node
-            for node, _ in verified
-        }
-        for future in as_completed(futures):
-            checked += 1
-            try:
-                result = future.result()
-            except Exception:
-                result = None
-            if result is not None:
-                probed.append(result)
-    order = {id(node): i for i, (node, _) in enumerate(verified)}
-    probed.sort(key=lambda item: order[id(item[0])])
-    if HS_SEEN:
-        # Diagnostics: what did the servers actually send back?
-        # (e.g. 0x10 = server reset, 0x48 = 'H' = HTTP-like reply)
-        seen = Counter(f"0x{b:02x}" for b in HS_SEEN)
-        print(f"handshake: first bytes seen: {dict(seen)}", flush=True)
-    return probed, checked, len(probed)
 
 
 def geo_lookup(ips, timeout=GEO_TIMEOUT_S):
@@ -825,11 +716,9 @@ def main():
         flush=True,
     )
 
-    # Live verification, three stages — VPN Gate's ping/speed are
+    # Live verification, two stages — VPN Gate's ping/speed are
     # self-reported and stale, so test the top candidates for real:
-    # (a) a real TCP connect, (b) a real OpenVPN handshake probe
-    # (a server that accepts TCP but never answers the OpenVPN
-    # reset is dead on the phone), and (c) a geolocation check of
+    # (a) a real TCP connect, and (b) a geolocation check of
     # the server IP (the published label is the IP's real location).
     # Each stage falls back to the previous stage's list if too few
     # pass, so the subscription never goes stale.
@@ -859,38 +748,7 @@ def main():
             flush=True,
         )
 
-    # Stage (b): OpenVPN handshake probe on the TCP-verified nodes.
-    if passed >= MIN_HOME_NODES:
-        probed, hs_checked, hs_passed = probe_home_nodes(verified)
-        if probed:
-            replies = sorted(ms for _, ms in probed)
-            print(
-                f"handshake check: {hs_passed}/{hs_checked} nodes "
-                f"answered the OpenVPN reset "
-                f"(reply {replies[0]}-{replies[-1]} ms, "
-                f"median {replies[len(replies) // 2]} ms)",
-                flush=True,
-            )
-        else:
-            print("handshake check: 0 nodes answered", flush=True)
-        if hs_passed >= MIN_HOME_NODES:
-            stage_nodes = [node for node, _ in probed]
-            verify_note = (
-                f"实测连通 {passed}/{checked} 个节点，"
-                f"OpenVPN 握手通过 {hs_passed}/{hs_checked} 个（{stamp}）"
-            )
-        else:
-            print(
-                "WARNING: too few handshake passes, "
-                "keeping the TCP-verified list",
-                flush=True,
-            )
-            verify_note = (
-                f"实测连通 {passed}/{checked} 个节点（TCP 握手），"
-                f"OpenVPN 握手仅通过 {hs_passed} 个，已回退到 TCP 验证清单（{stamp}）"
-            )
-
-    # Stage (c): geolocation check — drop nodes whose server IP
+    # Stage (b): geolocation check — drop nodes whose server IP
     # does not really sit in the labelled country.
     geo_kept, geo_dropped = geo_filter(stage_nodes)
     if len(geo_kept) >= MIN_HOME_NODES:

@@ -45,8 +45,11 @@ interface NodeDao {
     @Delete
     suspend fun delete(node: Node)
 
+    // @Query UPDATE 必须返回 Int（受影响行数），不能返回 Unit：
+    // Room 2.6.x 的 KSP 处理器处理返回 Unit 的 @Query 方法时会抛
+    // "unexpected jvm signature V"（V 是 void 的 JVM 签名）。
     @Query("UPDATE nodes SET lastLatencyMs = :ms WHERE id = :id")
-    suspend fun updateLatency(id: Long, ms: Long)
+    suspend fun updateLatency(id: Long, ms: Long): Int
 }
 
 @Database(entities = [Node::class, Profile::class], version = 2, exportSchema = false)

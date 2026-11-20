@@ -83,7 +83,7 @@ object ClashCore {
      * data 为 null 时不写 data 字段；非 null 时按 JSON 字符串值写入
      * （需要 data 为字符串的方法，调用方传已序列化的 JSON 字符串，即二次编码）。
      */
-    suspend fun invoke(method: String, data: String?): ActionResult =
+    suspend fun invoke(method: String, data: String? = null): ActionResult =
         suspendCancellableCoroutine { cont ->
             val request = JSONObject()
                 .put("id", UUID.randomUUID().toString())
@@ -130,7 +130,11 @@ object ClashCore {
 
     /** 设置事件监听。清除监听用 [clearEventListener]。 */
     fun setEventListener(listener: (String) -> Unit) {
-        Clash.setEventListener(listener)
+        // Clash.setEventListener 有 InvokeInterface / Function1 两个重载，
+        // 直接传 (String) -> Unit 的 lambda 匹配不到 ((String?) -> Unit)?。
+        // 用显式类型 (String?) -> Unit 的变量消除重载歧义，空值直接丢弃。
+        val cb: (String?) -> Unit = { s -> if (s != null) listener(s) }
+        Clash.setEventListener(cb)
     }
 
     /**

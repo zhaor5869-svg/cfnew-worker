@@ -78,8 +78,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // 确保默认档案存在（IO 协程，出错只记日志，不阻塞启动）。
+        // ensureDefaultProfile 在 ProfileRepository 上，不在 AppContainer 上。
         CoroutineScope(Dispatchers.IO).launch {
-            runCatching { container.ensureDefaultProfile() }
+            runCatching { container.profileRepository.ensureDefaultProfile() }
                 .onFailure { Log.e(TAG, "ensureDefaultProfile failed", it) }
         }
 

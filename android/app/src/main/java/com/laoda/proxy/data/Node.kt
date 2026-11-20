@@ -39,11 +39,15 @@ interface NodeDao {
     @Insert
     suspend fun insert(node: Node): Long
 
+    // @Insert/@Update/@Delete 快捷方法也不能返回 Unit：
+    // Room 2.6.x 的 KSP 处理器对 void 签名 V 同样抛
+    // "unexpected jvm signature V"（运行 #25 的堆栈走到的是
+    // DeletionMethodProcessor）。一律改返回 Int（受影响行数）。
     @Update
-    suspend fun update(node: Node)
+    suspend fun update(node: Node): Int
 
     @Delete
-    suspend fun delete(node: Node)
+    suspend fun delete(node: Node): Int
 
     // @Query UPDATE 必须返回 Int（受影响行数），不能返回 Unit：
     // Room 2.6.x 的 KSP 处理器处理返回 Unit 的 @Query 方法时会抛

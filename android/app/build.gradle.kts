@@ -85,6 +85,8 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     // material3 只把 material-icons-core 声明为 runtime 依赖，Icons.Filled.* 编译时不可见，必须显式声明。
     implementation("androidx.compose.material:material-icons-core")
+    // Folder / SwapHoriz 等图标不在 core 集里，在 extended 集里。
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")

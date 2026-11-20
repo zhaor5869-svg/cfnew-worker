@@ -69,7 +69,9 @@ sealed class CoreEvent {
 
 /** 解析 connections 快照：JSONObject{"connections":[...]} 或直接 JSONArray。 */
 internal fun parseConnectionsData(data: Any?): List<ConnectionInfo> {
-    val array: JSONArray? = when (data) {
+    // Elvis ?: return 已保证非空，声明为非空 JSONArray（声明成 JSONArray?
+    // 时编译器在后续 array.length()/optJSONObject() 处报 nullable receiver）。
+    val array: JSONArray = when (data) {
         is JSONArray -> data
         is JSONObject -> data.optJSONArray("connections")
         else -> null

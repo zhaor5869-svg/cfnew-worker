@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LaoDa Proxy 应用主题（模块 C 创建；AndroidManifest 已引用，之前悬空）。 -->
+    <style name="Theme.LaoDaProxy" parent="Theme.Material3.DayNight.NoActionBar">
+    </style>
+</resources>

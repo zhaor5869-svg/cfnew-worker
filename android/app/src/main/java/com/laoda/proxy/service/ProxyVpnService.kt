@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
  * 网络变化时调 CoreManager.resetConnections()。
  * 不引用 Node、ProxyProtocol、TlsSocket、ConnectionManager。
  */
-class ProxyVpnService : VpnService(), TunInterface {
+class ProxyVpnService : VpnService() {
 
     companion object {
         const val ACTION_START = "com.laoda.proxy.START"
@@ -112,7 +112,7 @@ class ProxyVpnService : VpnService(), TunInterface {
         }
         try {
             val fd = tun.detachFd()
-            ClashCore.startTun(fd, this, "LaoDaProxy", "system", "172.19.0.1/30", "1.1.1.1,1.0.0.1", 1400)
+            ClashCore.startTun(fd, tunInterface, "LaoDaProxy", "system", "172.19.0.1/30", "1.1.1.1,1.0.0.1", 1400)
         } catch (e: Exception) {
             Log.e(TAG, "startTun failed", e)
             scope.launch { stopProxy() }
@@ -134,20 +134,24 @@ class ProxyVpnService : VpnService(), TunInterface {
         stopSelf()
     }
 
-    // ---- TunInterface ----
+    // ---- TunInterface（必须独立成对象） ----
+    //
+    // TunInterface.protect 返回 Unit，VpnService.protect 返回 Boolean，
+    // 两者同名但返回类型冲突：服务类同时继承两者时，任何一个 override
+    // 都无法同时满足（Unit 不是 Boolean 的子类型，反之亦然）。
+    // 所以 TunInterface 单独实现成一个对象，protect 里调服务继承来的
+    // VpnService.protect，Boolean 结果忽略。
+    private val tunInterface = object : TunInterface {
+        override fun protect(fd: Int) {
+            this@ProxyVpnService.protect(fd)
+        }
 
-    override fun protect(fd: Int): Boolean {
-        // TunInterface.protect 与 VpnService.protect 同名；
-        // VpnService.protect 返回 Boolean，覆盖时必须返回 Boolean，
-        // TunInterface 侧不使用返回值。
-        return super<VpnService>.protect(fd)
-    }
-
-    override fun resolverProcess(protocol: Int, source: String, target: String, uid: Int): String {
-        return try {
-            packageManager.getPackagesForUid(uid)?.firstOrNull() ?: ""
-        } catch (_: Exception) {
-            ""
+        override fun resolverProcess(protocol: Int, source: String, target: String, uid: Int): String {
+            return try {
+                packageManager.getPackagesForUid(uid)?.firstOrNull() ?: ""
+            } catch (_: Exception) {
+                ""
+            }
         }
     }
 

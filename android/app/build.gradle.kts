@@ -39,6 +39,41 @@ android {
     }
 }
 
+// Mihomo core (prebuilt AAR, oviron/libmihomo-android v0.3.14 ->
+// mihomo v1.19.34, bridgeABI 3). Downloaded at build time from
+// GitHub Releases with SHA-256 verification, so the 47 MB binary
+// is not committed to the repo.
+// GPL-3.0: shipping this AAR obligates the app under GPL-3.0.
+// NOTE: these declarations must come BEFORE the dependencies block,
+// because the dependencies block references mihomoAar and
+// downloadMihomo; Gradle Kotlin DSL evaluates the script top to
+// bottom, so a reference to a val declared later is null.
+val mihomoVersion = "0.3.14"
+val mihomoSha256 = "7c3a68a4ef9afcb5018e167dc70fba7485652d0a0e29ba006703cf00fed9e230"
+val mihomoAar = layout.buildDirectory.file("libs/libmihomo-android-v$mihomoVersion.aar")
+
+// Download the Mihomo core AAR at build time (GitHub Actions has normal
+// internet; the local VM's Java TLS is blocked by the egress proxy).
+val downloadMihomo = tasks.register("downloadMihomo") {
+    inputs.property("mihomoVersion", mihomoVersion)
+    outputs.file(mihomoAar)
+    doLast {
+        val target = mihomoAar.get().asFile
+        target.parentFile.mkdirs()
+        val url =
+            "https://github.com/oviron/libmihomo-android/releases/download/v$mihomoVersion/libmihomo-android-v$mihomoVersion.aar"
+        target.outputStream().use { out ->
+            uri(url).toURL().openStream().use { it.copyTo(out) }
+        }
+        val digest = MessageDigest.getInstance("SHA-256")
+        val actual = target.inputStream().use { digest.digest(it.readBytes()) }
+            .joinToString("") { "%02x".format(it) }
+        require(actual == mihomoSha256) {
+            "libmihomo-android AAR SHA-256 mismatch: expected $mihomoSha256, got $actual"
+        }
+    }
+}
+
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")
@@ -58,36 +93,5 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // Mihomo core (prebuilt AAR, oviron/libmihomo-android v0.3.14 ->
-    // mihomo v1.19.34, bridgeABI 3). Downloaded at build time from
-    // GitHub Releases with SHA-256 verification, so the 47 MB binary
-    // is not committed to the repo.
-    // GPL-3.0: shipping this AAR obligates the app under GPL-3.0.
     implementation(files(mihomoAar).builtBy(downloadMihomo))
-}
-
-// Download the Mihomo core AAR at build time (GitHub Actions has normal
-// internet; the local VM's Java TLS is blocked by the egress proxy).
-val mihomoVersion = "0.3.14"
-val mihomoSha256 = "7c3a68a4ef9afcb5018e167dc70fba7485652d0a0e29ba006703cf00fed9e230"
-val mihomoAar = layout.buildDirectory.file("libs/libmihomo-android-v$mihomoVersion.aar")
-
-val downloadMihomo = tasks.register("downloadMihomo") {
-    inputs.property("mihomoVersion", mihomoVersion)
-    outputs.file(mihomoAar)
-    doLast {
-        val target = mihomoAar.get().asFile
-        target.parentFile.mkdirs()
-        val url =
-            "https://github.com/oviron/libmihomo-android/releases/download/v$mihomoVersion/libmihomo-android-v$mihomoVersion.aar"
-        target.outputStream().use { out ->
-            uri(url).toURL().openStream().use { it.copyTo(out) }
-        }
-        val digest = MessageDigest.getInstance("SHA-256")
-        val actual = target.inputStream().use { digest.digest(it.readBytes()) }
-            .joinToString("") { "%02x".format(it) }
-        require(actual == mihomoSha256) {
-            "libmihomo-android AAR SHA-256 mismatch: expected $mihomoSha256, got $actual"
-        }
-    }
 }

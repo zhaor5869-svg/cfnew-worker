@@ -79,6 +79,10 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.09.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
+    // themes.xml 的父主题 Theme.Material3.DayNight.NoActionBar 是
+    // View 版 Material 库提供的 XML 资源，Compose Material3 不提供
+    // XML 主题，所以必须显式依赖 com.google.android.material:material。
+    implementation("com.google.android.material:material:1.12.0")
     // material3 只把 material-icons-core 声明为 runtime 依赖，Icons.Filled.* 编译时不可见，必须显式声明。
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")

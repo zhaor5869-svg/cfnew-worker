@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -81,7 +83,7 @@ val downloadMihomo = tasks.register("downloadMihomo") {
         target.outputStream().use { out ->
             uri(url).toURL().openStream().use { it.copyTo(out) }
         }
-        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        val digest = MessageDigest.getInstance("SHA-256")
         val actual = target.inputStream().use { digest.digest(it.readBytes()) }
             .joinToString("") { "%02x".format(it) }
         require(actual == mihomoSha256) {

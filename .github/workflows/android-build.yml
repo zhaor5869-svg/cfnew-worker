@@ -6,6 +6,8 @@
 # - Mihomo 核心 AAR 由 Gradle 任务 downloadMihomo 从 GitHub Releases 拉取并校验 SHA-256。
 # - Geo 数据库（Country.mmdb / geoip.dat / geosite.dat）由下面步骤从
 #   MetaCubeX/meta-rules-dat 的 latest release 拉取到 android/app/src/main/assets/。
+# SDK 安装不用 android-actions/setup-android（它会跑已废弃的 `sdkmanager tools`
+# 而失败），改用 runner 预装的 SDK + sdkmanager 直接装所需包。
 name: Android APK
 
 on:
@@ -18,6 +20,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,13 +33,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
+
+      - name: Install Android SDK packages
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/cmdline-tools/" || true
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          ls "$ANDROID_HOME/platforms/" "$ANDROID_HOME/build-tools/"
 
       - name: Download geo databases
         run: |

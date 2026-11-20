@@ -3,6 +3,7 @@ import java.security.MessageDigest
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
 }
 
@@ -23,8 +24,6 @@ android {
         }
     }
     buildFeatures { compose = true }
-    // Compose compiler 1.8.2 pairs with Kotlin 2.2.0.
-    composeOptions { kotlinCompilerExtensionVersion = "1.8.2" }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

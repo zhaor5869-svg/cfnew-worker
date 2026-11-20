@@ -136,9 +136,11 @@ class ProxyVpnService : VpnService(), TunInterface {
 
     // ---- TunInterface ----
 
-    override fun protect(fd: Int) {
-        // TunInterface.protect 返回 Unit；VpnService.protect 的 Boolean 结果忽略。
-        super<VpnService>.protect(fd)
+    override fun protect(fd: Int): Boolean {
+        // TunInterface.protect 与 VpnService.protect 同名；
+        // VpnService.protect 返回 Boolean，覆盖时必须返回 Boolean，
+        // TunInterface 侧不使用返回值。
+        return super<VpnService>.protect(fd)
     }
 
     override fun resolverProcess(protocol: Int, source: String, target: String, uid: Int): String {

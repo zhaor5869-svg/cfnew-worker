@@ -42,12 +42,15 @@ interface ProfileDao {
     @Delete
     suspend fun delete(profile: Profile)
 
+    // @Query UPDATE 必须返回 Int（受影响行数），不能返回 Unit：
+    // Room 2.6.x 的 KSP 处理器处理返回 Unit 的 @Query 方法时会抛
+    // "unexpected jvm signature V"（V 是 void 的 JVM 签名）。
     @Query("UPDATE profiles SET isCurrent = 0")
-    suspend fun clearCurrent()
+    suspend fun clearCurrent(): Int
 
     @Query("UPDATE profiles SET isCurrent = 1 WHERE id = :id")
-    suspend fun markCurrent(id: Long)
+    suspend fun markCurrent(id: Long): Int
 
     @Query("UPDATE profiles SET updatedAt = :t WHERE id = :id")
-    suspend fun touch(id: Long, t: Long)
+    suspend fun touch(id: Long, t: Long): Int
 }

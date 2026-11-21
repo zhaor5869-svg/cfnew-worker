@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -28,20 +27,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laoda.proxy.LaoDaApplication
 import com.laoda.proxy.data.Profile
 import com.laoda.proxy.data.ProfileRepository
+import com.laoda.proxy.ui.theme.AppCard
+import com.laoda.proxy.ui.theme.Pill
 import com.laoda.proxy.ui.util.formatTime
 import com.laoda.proxy.ui.vmFactory
 
 /**
- * 配置页（模块 C）：档案列表（名字、类型、更新时间、当前标记）；
- * 添加订阅（URL 对话框，默认填默认订阅 URL）+ 文件导入（GetContent）；
- * 每条可更新、设为当前、删除（删除前 AlertDialog 确认）。
+ * 配置页（v0.1.3 UI 改版）：档案卡片改成 FlClash 式大圆角卡片，
+ * “当前”改成主色胶囊徽章，操作改成轻量文字按钮。
+ * 添加订阅 / 文件导入 / 粘贴配置内容的 ViewModel 接线与 v0.1.2 完全一致，只改表现层。
  */
 @Composable
 fun ProfilesScreen() {
@@ -88,9 +91,12 @@ fun ProfilesScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text("配置", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "配置",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        )
         Spacer(Modifier.height(12.dp))
 
         Row(
@@ -122,10 +128,11 @@ fun ProfilesScreen() {
         Spacer(Modifier.height(12.dp))
 
         if (profiles.isEmpty()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     "暂无配置，点击上方按钮添加订阅或导入文件。",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         } else {
@@ -200,34 +207,56 @@ private fun ProfileCard(
         "file" -> "本地文件"
         else -> profile.type
     }
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(modifier = Modifier.fillMaxWidth()) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     profile.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                    ),
                     modifier = Modifier.weight(1f),
+                    maxLines = 1,
                 )
                 if (isCurrent) {
-                    Text(
-                        "当前",
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.labelLarge,
+                    Pill(
+                        text = "当前",
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
-            Text("类型：$typeLabel")
-            Text("更新时间：${formatTime(profile.updatedAt)}")
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "$typeLabel · 更新于 ${formatTime(profile.updatedAt)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             if (!profile.url.isNullOrEmpty()) {
-                Text("订阅地址：${profile.url}", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    profile.url,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                )
             }
             Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onUpdate) { Text("更新") }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = onUpdate) { Text("更新") }
                 if (!isCurrent) {
-                    OutlinedButton(onClick = onSetCurrent) { Text("设为当前") }
+                    TextButton(onClick = onSetCurrent) { Text("设为当前") }
                 }
-                OutlinedButton(onClick = onDelete) { Text("删除") }
+                TextButton(
+                    onClick = onDelete,
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    Text("删除")
+                }
             }
         }
     }

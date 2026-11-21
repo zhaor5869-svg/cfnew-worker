@@ -37,12 +37,31 @@ class SubscriptionManager(private val context: Context) {
                 if (bytes.size < 1024) {
                     throw IllegalStateException("Subscription content too small (${bytes.size} bytes)")
                 }
-                val text = bytes.toString(Charsets.UTF_8)
-                if (!text.contains("proxies") && !text.contains("proxy-groups")) {
-                    throw IllegalStateException("Invalid subscription: no proxies or proxy-groups")
+                // 有些订阅服务返回的是 base64 编码后的 Clash 配置，
+                // 明文里没有 proxies/proxy-groups。先按原文判断，
+                // 不通过就试 base64 解码，解出来有 proxies 才算有效。
+                val rawText = bytes.toString(Charsets.UTF_8)
+                val text = if (rawText.contains("proxies") || rawText.contains("proxy-groups")) {
+                    rawText
+                } else {
+                    val decoded = runCatching {
+                        android.util.Base64.decode(
+                            rawText.trim(),
+                            android.util.Base64.DEFAULT,
+                        ).toString(Charsets.UTF_8)
+                    }.getOrNull()
+                    if (decoded != null &&
+                        (decoded.contains("proxies") || decoded.contains("proxy-groups"))
+                    ) {
+                        decoded
+                    } else {
+                        throw IllegalStateException(
+                            "Invalid subscription: no proxies or proxy-groups",
+                        )
+                    }
                 }
                 destFile.parentFile?.mkdirs()
-                destFile.writeBytes(bytes)
+                destFile.writeText(text, Charsets.UTF_8)
             }
         }
     }

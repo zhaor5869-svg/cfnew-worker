@@ -14,8 +14,8 @@ android {
         applicationId = "com.laoda.proxy"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.1.3"
+        versionCode = 5
+        versionName = "0.1.4"
     }
     buildTypes {
         release {
@@ -29,11 +29,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    // Keep the 47 MB native core out of the debug APK's shrinking path;
-    // the AAR's .so files are loaded by the Clash facade at runtime.
+    // v0.1.3 的教训：useLegacyPackaging = false 时，安装时不把 .so 解压到
+    // /data/app/.../lib/arm64/，libmihomo 的 Clash.load(nativeLibDir)
+    // 在该目录下找不到 libclash.so，启动就报 "Clash not loaded"。
+    // 必须用 legacy 打包（安装时解压 .so），核心才能加载。
     packaging {
         jniLibs {
-            useLegacyPackaging = false
+            useLegacyPackaging = true
         }
     }
 }

@@ -58,6 +58,7 @@ fun ProfilesScreen() {
     val message by viewModel.message.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
+    var showPasteDialog by remember { mutableStateOf(false) }
     var profileToDelete by remember { mutableStateOf<Profile?>(null) }
 
     // 文件选择：GetContent，mime 用 "*/*" 而不用 "text/*"——
@@ -109,6 +110,15 @@ fun ProfilesScreen() {
                 Text("从文件导入")
             }
         }
+        Spacer(Modifier.height(8.dp))
+        // 粘贴配置内容：订阅服务器有 Cloudflare 验证、App 直连被 403 时用。
+        // 用户在手机浏览器里打开订阅地址，等验证通过后全选复制，再粘贴到这里。
+        OutlinedButton(
+            onClick = { showPasteDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("粘贴配置内容")
+        }
         Spacer(Modifier.height(12.dp))
 
         if (profiles.isEmpty()) {
@@ -139,6 +149,16 @@ fun ProfilesScreen() {
             onConfirm = { name, url ->
                 viewModel.addSubscription(name, url)
                 showAddDialog = false
+            },
+        )
+    }
+
+    if (showPasteDialog) {
+        PasteConfigDialog(
+            onDismiss = { showPasteDialog = false },
+            onConfirm = { name, content ->
+                viewModel.addFromContent(name, content)
+                showPasteDialog = false
             },
         )
     }
@@ -211,6 +231,55 @@ private fun ProfileCard(
             }
         }
     }
+}
+
+@Composable
+private fun PasteConfigDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (name: String, content: String) -> Unit,
+) {
+    var name by remember { mutableStateOf("我的订阅") }
+    var content by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("粘贴配置内容") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "订阅地址打不开时用这个：在手机浏览器里打开订阅地址，" +
+                        "等验证通过后全选复制配置内容，再粘贴到这里。",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("名称") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                TextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    label = { Text("配置内容") },
+                    minLines = 6,
+                    maxLines = 10,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(name.trim(), content.trim()) },
+                enabled = name.isNotBlank() && content.isNotBlank(),
+            ) {
+                Text("导入")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
 }
 
 @Composable

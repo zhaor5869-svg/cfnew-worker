@@ -67,6 +67,18 @@ class ProfilesViewModel(
         }
     }
 
+    /** 粘贴配置内容导入（订阅服务器有 Cloudflare 验证、App 直连被 403 时用）。 */
+    fun addFromContent(name: String, content: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = profileRepository.addFromContent(name, content)
+            _message.value = if (result.isSuccess) {
+                "导入成功"
+            } else {
+                "导入失败：${result.exceptionOrNull()?.message}"
+            }
+        }
+    }
+
     /** 更新一条档案（重新下载订阅或校验本地文件）。 */
     fun updateProfile(profile: Profile) {
         viewModelScope.launch(Dispatchers.IO) {

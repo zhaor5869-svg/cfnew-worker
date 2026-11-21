@@ -64,7 +64,12 @@ class ProfileRepository(
                 updatedAt = now,
                 isCurrent = false,
             )
-            val id = dao.insert(profile)
+            // insert 失败也要包成 Result.failure 返回，否则异常直接抛到
+            // ViewModel，界面上什么提示都没有，用户只看到“没反应”。
+            val id = runCatching { dao.insert(profile) }.getOrElse {
+                if (destFile.exists()) destFile.delete()
+                return@withContext Result.failure(it)
+            }
             Result.success(profile.copy(id = id))
         }
 
@@ -102,7 +107,12 @@ class ProfileRepository(
                 updatedAt = now,
                 isCurrent = false,
             )
-            val id = dao.insert(profile)
+            // insert 失败也要包成 Result.failure 返回，否则异常直接抛到
+            // ViewModel，界面上什么提示都没有，用户只看到“没反应”。
+            val id = runCatching { dao.insert(profile) }.getOrElse {
+                if (destFile.exists()) destFile.delete()
+                return@withContext Result.failure(it)
+            }
             Result.success(profile.copy(id = id))
         }
 

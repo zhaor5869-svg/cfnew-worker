@@ -53,6 +53,10 @@ class CoreManager(private val context: Context) {
     private val _proxies = MutableStateFlow<List<ProxyGroup>>(emptyList())
     val proxies: StateFlow<List<ProxyGroup>> = _proxies.asStateFlow()
 
+    /** 最近一次刷新代理组的结果（诊断用，代理页空态时展示）。 */
+    private val _proxiesStatus = MutableStateFlow("未加载")
+    val proxiesStatus: StateFlow<String> = _proxiesStatus.asStateFlow()
+
     private val _connections = MutableStateFlow<List<ConnectionInfo>>(emptyList())
     val connections: StateFlow<List<ConnectionInfo>> = _connections.asStateFlow()
 
@@ -159,12 +163,17 @@ class CoreManager(private val context: Context) {
     /** 刷新代理组列表（同时更新 currentNode）。 */
     suspend fun refreshProxies() = withContext(Dispatchers.IO) {
         val result = runCatching { ClashCore.invoke("getProxies", null) }.getOrNull()
-            ?: return@withContext
+        if (result == null) {
+            _proxiesStatus.value = "getProxies 调用异常"
+            return@withContext
+        }
         if (!result.isSuccess) {
+            _proxiesStatus.value = "getProxies 失败：code=${result.code}"
             Log.w(TAG, "getProxies failed: code=${result.code}")
             return@withContext
         }
         val groups = parseProxyGroups(result.data)
+        _proxiesStatus.value = "已加载 ${groups.size} 个组"
         // 保留已有的延迟（getProxies 本身不带实时延迟）。
         val oldByName = _proxies.value.associateBy { it.name }
         _proxies.value = groups.map { g ->

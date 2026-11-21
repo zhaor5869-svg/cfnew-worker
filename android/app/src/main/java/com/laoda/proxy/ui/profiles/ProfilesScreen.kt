@@ -60,7 +60,10 @@ fun ProfilesScreen() {
     var showAddDialog by remember { mutableStateOf(false) }
     var profileToDelete by remember { mutableStateOf<Profile?>(null) }
 
-    // 文件选择：GetContent，mime "text/*"。
+    // 文件选择：GetContent，mime 用 "*/*" 而不用 "text/*"——
+    // .yaml/.yml 文件在很多手机上是 application/x-yaml 或
+    // application/octet-stream，用 "text/*" 时文件选择器里
+    // 根本选不到 yaml 文件（v0.1.0 的导入失败很可能就是这个）。
     val filePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent(),
     ) { uri ->
@@ -75,7 +78,8 @@ fun ProfilesScreen() {
 
     LaunchedEffect(message) {
         message?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            // 用 LENGTH_LONG：失败原因要让用户读完，2 秒的 SHORT 根本看不清。
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.consumeMessage()
         }
     }
@@ -99,7 +103,7 @@ fun ProfilesScreen() {
                 Text("添加订阅")
             }
             OutlinedButton(
-                onClick = { filePicker.launch("text/*") },
+                onClick = { filePicker.launch("*/*") },
                 modifier = Modifier.weight(1f),
             ) {
                 Text("从文件导入")

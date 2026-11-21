@@ -1,6 +1,7 @@
 package com.laoda.proxy.ui.proxies
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,13 +11,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,18 +32,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laoda.proxy.LaoDaApplication
 import com.laoda.proxy.core.CoreState
 import com.laoda.proxy.core.ProxyGroup
+import com.laoda.proxy.ui.theme.AppCard
+import com.laoda.proxy.ui.theme.DelayBadge
 import com.laoda.proxy.ui.vmFactory
 
 /**
- * 代理页（模块 C）：组可展开（type、当前选中 now、成员列表）；
- * 节点行显示名字、类型、延迟；点节点行切换；顶部“测速全部”。
- * 未运行时显示空态提示。
+ * 代理页（v0.1.3 UI 改版）：FlClash 式节点列表——
+ * 组头带延迟徽章、节点行带延迟徽章、选中态用主色容器底 + 对勾图标。
+ * 组展开、节点切换、测速的 ViewModel 接线与 v0.1.0 完全一致，只改表现层。
  */
 @Composable
 fun ProxiesScreen() {
@@ -67,9 +75,12 @@ fun ProxiesScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text("代理", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "代理",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        )
         Spacer(Modifier.height(12.dp))
 
         Button(
@@ -82,20 +93,22 @@ fun ProxiesScreen() {
         Spacer(Modifier.height(12.dp))
 
         if (!isRunning) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     "核心未运行，请先在首页连接。",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             return@Column
         }
 
         if (proxies.isEmpty()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     "暂无代理组，请检查配置。",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             return@Column
@@ -118,10 +131,9 @@ private fun ProxyGroupCard(
     onSelectProxy: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val groupDelayText = group.delayMs?.let { if (it < 0) "-" else "$it ms" } ?: "-"
 
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -129,10 +141,20 @@ private fun ProxyGroupCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(group.name, style = MaterialTheme.typography.titleMedium)
-                    Text("类型：${group.type} · 延迟：$groupDelayText")
-                    Text("当前选中：${group.now ?: "-"}")
+                    Text(
+                        group.name,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                        ),
+                    )
+                    Text(
+                        "${group.type} · 当前：${group.now ?: "-"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
                 }
+                DelayBadge(delayMs = group.delayMs)
                 Icon(
                     imageVector = if (expanded) {
                         Icons.Filled.KeyboardArrowUp
@@ -140,11 +162,15 @@ private fun ProxyGroupCard(
                         Icons.Filled.KeyboardArrowDown
                     },
                     contentDescription = if (expanded) "收起" else "展开",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(20.dp),
                 )
             }
 
             if (expanded) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 // 优先用节点明细；若解析没给 nodes，用成员名列表兜底。
                 if (group.nodes.isNotEmpty()) {
                     group.nodes.forEach { node ->
@@ -170,7 +196,11 @@ private fun ProxyGroupCard(
                     }
                 }
                 if (group.all.isEmpty() && group.nodes.isEmpty()) {
-                    Text("该组暂无成员", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "该组暂无成员",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -185,32 +215,47 @@ private fun ProxyNodeRow(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val delayText = when {
-        delayMs == null -> "-"
-        delayMs < 0 -> "-"
-        else -> "$delayMs ms"
-    }
+    val scheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) scheme.primaryContainer else Color.Transparent)
             .clickable { onClick() }
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (selected) {
+            Icon(
+                Icons.Filled.CheckCircle,
+                contentDescription = "已选中",
+                tint = scheme.primary,
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(end = 8.dp),
+            )
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                name + if (selected) " ✓" else "",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
+                name,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                ),
+                color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
+                maxLines = 1,
             )
             if (type.isNotEmpty()) {
-                Text(type, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    type,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (selected) {
+                        scheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    } else {
+                        scheme.onSurfaceVariant
+                    },
+                )
             }
         }
-        Text(delayText, style = MaterialTheme.typography.bodyMedium)
+        DelayBadge(delayMs = delayMs)
     }
 }

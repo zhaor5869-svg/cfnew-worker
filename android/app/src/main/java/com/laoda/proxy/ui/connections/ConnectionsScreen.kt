@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,17 +26,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laoda.proxy.LaoDaApplication
 import com.laoda.proxy.core.ConnectionInfo
+import com.laoda.proxy.ui.theme.AppCard
 import com.laoda.proxy.ui.util.formatBytes
 import com.laoda.proxy.ui.vmFactory
 
 /**
- * 连接页（模块 C）：目标 host/IP、协议 network/type、规则 rule、
- * 上下行、进程 process；每条有关闭按钮；顶部“全部关闭”+刷新按钮；
- * 未运行显示空态。
+ * 连接页（v0.1.3 UI 改版）：卡片改成 FlClash 式大圆角，
+ * 目标 host 加粗、其余信息用次要文字色分层。
+ * 关闭/刷新/全部关闭的 ViewModel 接线与 v0.1.0 完全一致，只改表现层。
  */
 @Composable
 fun ConnectionsScreen() {
@@ -61,9 +62,12 @@ fun ConnectionsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text("连接", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "连接",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        )
         Spacer(Modifier.height(12.dp))
 
         Row(
@@ -88,20 +92,22 @@ fun ConnectionsScreen() {
         Spacer(Modifier.height(12.dp))
 
         if (!isRunning) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     "核心未运行，请先在首页连接。",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             return@Column
         }
 
         if (connections.isEmpty()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     "当前没有活跃连接。",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             return@Column
@@ -126,26 +132,46 @@ private fun ConnectionCard(
     val target = connection.host.ifEmpty {
         "${connection.destinationIP}:${connection.destinationPort}"
     }
-    Card(modifier = Modifier.fillMaxWidth()) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    AppCard(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(target, style = MaterialTheme.typography.titleMedium)
-                Text("协议：${connection.network} / ${connection.type}")
-                Text("规则：${connection.rule.ifEmpty { "-" }}")
+                Text(
+                    target,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                    maxLines = 1,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "协议：${connection.network} / ${connection.type} · 规则：${connection.rule.ifEmpty { "-" }}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = muted,
+                )
                 if (connection.process.isNotEmpty()) {
-                    Text("进程：${connection.process}")
+                    Text(
+                        "进程：${connection.process}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = muted,
+                    )
                 }
                 Text(
                     "上行 ${formatBytes(connection.upload)} · 下行 ${formatBytes(connection.download)}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFeatureSettings = "tnum",
+                    ),
+                    color = muted,
                 )
                 if (connection.chains.isNotEmpty()) {
                     Text(
                         "链路：${connection.chains.joinToString(" → ")}",
                         style = MaterialTheme.typography.bodySmall,
+                        color = muted,
+                        maxLines = 2,
                     )
                 }
             }

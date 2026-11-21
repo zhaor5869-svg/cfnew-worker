@@ -4,6 +4,7 @@ import io.github.oviron.libmihomo.Clash
 import io.github.oviron.libmihomo.InvokeInterface
 import io.github.oviron.libmihomo.TunInterface
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.UUID
@@ -101,7 +102,21 @@ object ClashCore {
         return try {
             val json = JSONObject(raw)
             val code = json.optInt("code", -1)
-            val data = if (json.has("data") && !json.isNull("data")) json.opt("data") else null
+            var data: Any? = if (json.has("data") && !json.isNull("data")) json.opt("data") else null
+            // libmihomo 的 getProxies / getConnections / testGroups 等方法
+            // 把 data 以 JSON 字符串（二次编码）返回，例如 data="{\"proxies\":{...}}"；
+            // org.json 的 opt("data") 拿到的是 String，解析函数收不到 JSONObject
+            // 就会静默返回空列表——这就是 v0.1.4 代理页全空的根因。
+            // 这里先解一层：看起来像 JSON 对象/数组的字符串就解析成 JSONObject/JSONArray。
+            // 纯文本结果（出口 IP、YAML 文本、空串等）不以 { 或 [ 开头，不受影响。
+            if (data is String) {
+                val trimmed = data.trim()
+                if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                    data = runCatching {
+                        if (trimmed.startsWith("{")) JSONObject(trimmed) else JSONArray(trimmed)
+                    }.getOrNull() ?: data
+                }
+            }
             ActionResult(code, data)
         } catch (_: Exception) {
             ActionResult(-1, raw)

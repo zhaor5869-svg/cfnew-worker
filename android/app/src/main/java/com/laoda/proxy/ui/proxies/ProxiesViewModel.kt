@@ -25,6 +25,7 @@ class ProxiesViewModel(
     }
 
     val proxies: StateFlow<List<ProxyGroup>> = coreManager.proxies
+    val proxiesStatus: StateFlow<String> = coreManager.proxiesStatus
     val state: StateFlow<CoreState> = coreManager.state
 
     private val _testing = MutableStateFlow(false)

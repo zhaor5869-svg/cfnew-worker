@@ -16,8 +16,10 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -144,7 +147,12 @@ private fun AppNav(onVpnStartRequest: (Long) -> Unit) {
         bottomBar = {
             // logs 页不在 tab 栏，进去后隐藏底部导航。
             if (currentRoute != NavRoutes.LOGS) {
-                NavigationBar {
+                // v0.1.3 UI 改版：导航栏用低层表面色，选中项用主色容器做指示条、
+                // 未选中图标用次要文字色——FlClash 式干净的底部导航。
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    tonalElevation = 0.dp,
+                ) {
                     TAB_ITEMS.forEach { tab ->
                         NavigationBarItem(
                             selected = currentRoute == tab.route,
@@ -159,6 +167,13 @@ private fun AppNav(onVpnStartRequest: (Long) -> Unit) {
                             },
                             icon = { Icon(tab.icon, contentDescription = tab.label) },
                             label = { Text(tab.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
                         )
                     }
                 }

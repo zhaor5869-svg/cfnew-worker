@@ -229,7 +229,7 @@ fun SettingsScreen() {
             Column(modifier = Modifier.padding(20.dp)) {
                 SectionTitle("关于")
                 Spacer(Modifier.height(8.dp))
-                Text("应用版本：0.1.3")
+                Text("应用版本：0.1.4")
                 Text("核心：mihomo v1.19.34")
                 Spacer(Modifier.height(8.dp))
                 Text(

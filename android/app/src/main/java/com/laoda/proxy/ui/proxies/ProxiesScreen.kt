@@ -59,6 +59,7 @@ fun ProxiesScreen() {
     )
 
     val proxies by viewModel.proxies.collectAsState()
+    val proxiesStatus by viewModel.proxiesStatus.collectAsState()
     val state by viewModel.state.collectAsState()
     val testing by viewModel.testing.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -105,11 +106,18 @@ fun ProxiesScreen() {
 
         if (proxies.isEmpty()) {
             AppCard(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "暂无代理组，请检查配置。",
-                    modifier = Modifier.padding(20.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        "暂无代理组，请检查配置。",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        proxiesStatus,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             return@Column
         }

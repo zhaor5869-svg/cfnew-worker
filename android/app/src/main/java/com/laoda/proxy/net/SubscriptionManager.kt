@@ -26,10 +26,20 @@ class SubscriptionManager(private val context: Context) {
         runCatching {
             val request = Request.Builder()
                 .url(url)
-                .header("User-Agent", "LaoDaProxy/0.1")
+                // 用 Clash 客户端的 UA：有些订阅面板只认常见客户端，
+                // 自定义 UA 更容易被 Cloudflare 当成机器人拦下。
+                .header("User-Agent", "ClashforAndroid/2.5.12")
+                .header("Accept", "*/*")
                 .build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful || response.code != 200) {
+                    if (response.code == 403) {
+                        throw IllegalStateException(
+                            "HTTP 403：订阅服务器拒绝了 App 的直接访问（Cloudflare 验证）。" +
+                                "请用「粘贴配置内容」导入：在手机浏览器里打开订阅地址，" +
+                                "等验证通过后复制配置内容粘贴进来。",
+                        )
+                    }
                     throw IllegalStateException("HTTP ${response.code}")
                 }
                 val bytes = response.body?.bytes()

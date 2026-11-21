@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
@@ -29,19 +28,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.laoda.proxy.LaoDaApplication
 import com.laoda.proxy.data.ThemeMode
+import com.laoda.proxy.ui.theme.AppCard
+import com.laoda.proxy.ui.theme.SectionTitle
 import com.laoda.proxy.ui.vmFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 设置页（模块 C）：主题三选一、语言三选一（只存储，提示重启后生效）、
- * 备份（CreateDocument 导出当前 config.yaml 文本）、恢复（GetContent 导入）、
- * 关于（版本 0.1.0、mihomo v1.19.34、GPL-3.0 说明）。
+ * 设置页（v0.1.3 UI 改版）：分节卡片 + 小节标题 + 更宽松的行距。
+ * 主题/语言/备份/关于的 ViewModel 接线与 v0.1.0 完全一致，只改表现层。
  */
 @Composable
 fun SettingsScreen() {
@@ -114,19 +115,22 @@ fun SettingsScreen() {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("设置", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "设置",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+        )
 
         // ---- 主题 ----
-        Card(modifier = Modifier.fillMaxWidth()) {
+        AppCard(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(20.dp)
                     .selectableGroup(),
             ) {
-                Text("主题", style = MaterialTheme.typography.titleMedium)
+                SectionTitle("主题")
                 Spacer(Modifier.height(8.dp))
                 listOf(
                     ThemeMode.SYSTEM to "跟随系统",
@@ -137,27 +141,27 @@ fun SettingsScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { viewModel.setTheme(mode) }
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
                             selected = theme == mode,
                             onClick = { viewModel.setTheme(mode) },
                         )
-                        Text(label)
+                        Text(label, modifier = Modifier.padding(start = 8.dp))
                     }
                 }
             }
         }
 
         // ---- 语言 ----
-        Card(modifier = Modifier.fillMaxWidth()) {
+        AppCard(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(20.dp)
                     .selectableGroup(),
             ) {
-                Text("语言", style = MaterialTheme.typography.titleMedium)
+                SectionTitle("语言")
                 Spacer(Modifier.height(8.dp))
                 listOf(
                     "system" to "跟随系统",
@@ -171,7 +175,7 @@ fun SettingsScreen() {
                                 viewModel.setLanguage(value)
                                 Toast.makeText(context, "语言设置已保存，重启后生效", Toast.LENGTH_SHORT).show()
                             }
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
@@ -181,53 +185,58 @@ fun SettingsScreen() {
                                 Toast.makeText(context, "语言设置已保存，重启后生效", Toast.LENGTH_SHORT).show()
                             },
                         )
-                        Text(label)
+                        Text(label, modifier = Modifier.padding(start = 8.dp))
                     }
                 }
                 Text(
                     "语言只做存储，重启应用后生效。",
                     style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
 
         // ---- 备份 / 恢复 ----
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("备份与恢复", style = MaterialTheme.typography.titleMedium)
+        AppCard(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                SectionTitle("备份与恢复")
                 Spacer(Modifier.height(8.dp))
                 Text(
                     "当前配置：${currentProfile?.name ?: "无"}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = { backupLauncher.launch("laoda-proxy-config.yaml") },
                         enabled = currentProfile != null,
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("备份（导出当前配置）")
+                        Text("备份")
                     }
                     OutlinedButton(
                         onClick = { restoreLauncher.launch("text/*") },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("恢复（导入 YAML）")
+                        Text("恢复")
                     }
                 }
             }
         }
 
         // ---- 关于 ----
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("关于", style = MaterialTheme.typography.titleMedium)
+        AppCard(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                SectionTitle("关于")
                 Spacer(Modifier.height(8.dp))
-                Text("应用版本：0.1.0")
+                Text("应用版本：0.1.3")
                 Text("核心：mihomo v1.19.34")
                 Spacer(Modifier.height(8.dp))
-                Text("本应用基于 Mihomo（GPL-3.0），源码按 GPL-3.0 提供。")
+                Text(
+                    "本应用基于 Mihomo（GPL-3.0），源码按 GPL-3.0 提供。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

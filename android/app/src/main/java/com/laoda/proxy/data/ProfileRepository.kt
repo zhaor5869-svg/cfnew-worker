@@ -116,6 +116,63 @@ class ProfileRepository(
             Result.success(profile.copy(id = id))
         }
 
+    /** 粘贴配置内容导入（订阅服务器有 Cloudflare 验证、App 直连被 403 时用）：
+     * 用户在手机浏览器里打开订阅地址，等验证通过后全选复制配置内容，
+     * 再粘贴到这里。支持明文 YAML 和 base64 编码的订阅内容。 */
+    suspend fun addFromContent(name: String, content: String): Result<Profile> =
+        withContext(Dispatchers.IO) {
+            val trimmed = content.trim()
+            if (trimmed.length < 100) {
+                return@withContext Result.failure(
+                    IllegalStateException("内容太短，不像一份完整的配置"),
+                )
+            }
+            val text = if (trimmed.contains("proxies") || trimmed.contains("proxy-groups")) {
+                trimmed
+            } else {
+                val decoded = runCatching {
+                    android.util.Base64.decode(
+                        trimmed,
+                        android.util.Base64.DEFAULT,
+                    ).toString(Charsets.UTF_8)
+                }.getOrNull()
+                if (decoded != null &&
+                    (decoded.contains("proxies") || decoded.contains("proxy-groups"))
+                ) {
+                    decoded
+                } else {
+                    return@withContext Result.failure(
+                        IllegalStateException("内容里没有 proxies 或 proxy-groups，请确认粘贴的是完整配置"),
+                    )
+                }
+            }
+            val fileName = "paste_${System.currentTimeMillis()}.yaml"
+            val destFile = File(profilesDir(), fileName)
+            destFile.writeText(text, Charsets.UTF_8)
+            val validated = subscriptionManager.validateYaml(destFile)
+            if (validated.isFailure) {
+                if (destFile.exists()) destFile.delete()
+                return@withContext Result.failure(
+                    validated.exceptionOrNull() ?: IllegalStateException("Invalid YAML"),
+                )
+            }
+            val profile = Profile(
+                name = name,
+                type = "file",
+                url = null,
+                fileName = fileName,
+                updatedAt = System.currentTimeMillis(),
+                isCurrent = false,
+            )
+            // insert 失败也要包成 Result.failure 返回，否则异常直接抛到
+            // ViewModel，界面上什么提示都没有，用户只看到“没反应”。
+            val id = runCatching { dao.insert(profile) }.getOrElse {
+                if (destFile.exists()) destFile.delete()
+                return@withContext Result.failure(it)
+            }
+            Result.success(profile.copy(id = id))
+        }
+
     suspend fun updateProfile(profile: Profile): Result<Unit> =
         withContext(Dispatchers.IO) {
             if (profile.type == "subscription") {

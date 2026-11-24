@@ -1,8 +1,8 @@
 # cfnew 家宽订阅：CF 节点带路，落地是住宅宽带
 # 内核要 1.19.25 以上，老内核不认这类节点
 # 节点是网友共享的，掉线很正常，家宽自动会自己往下换
-# 生成时间 2026-11-25 06:44 CST，节点有效期以 VPN Gate 清单为准
-# 移动版：前置为移动优选 IP + 香港优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单；实测连通 40/49 个节点（TCP 握手，2026-11-25 06:44 CST）
+# 生成时间 2026-11-25 07:37 CST，节点有效期以 VPN Gate 清单为准
+# 移动版：前置为移动优选 IP + 香港优选 IP + 21 个优选域名 + 2 个直连 pages.dev，测速组在移动流量下自动选最快的前置；家宽节点来自公开 VPN Gate 清单；实测连通 31/47 个节点（TCP 握手，2026-11-25 07:37 CST）
 mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -23,7 +23,7 @@ dns:
 proxies:
   - name: "移动优选-01"
     type: vless
-    server: "104.18.147.201"
+    server: "104.17.100.185"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -38,7 +38,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-02"
     type: vless
-    server: "104.17.210.171"
+    server: "104.18.83.92"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -53,7 +53,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-03"
     type: vless
-    server: "104.17.219.208"
+    server: "104.16.253.83"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -68,7 +68,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-04"
     type: vless
-    server: "104.17.110.70"
+    server: "104.17.102.95"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -83,7 +83,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-05"
     type: vless
-    server: "104.16.246.173"
+    server: "104.16.242.72"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -98,7 +98,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "移动优选-06"
     type: vless
-    server: "104.17.189.171"
+    server: "104.19.150.163"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -233,7 +233,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-03"
     type: vless
-    server: "39.105.24.90"
+    server: "149.104.3.47"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -248,7 +248,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-04"
     type: vless
-    server: "108.165.147.157"
+    server: "202.148.221.168"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -263,7 +263,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-05"
     type: vless
-    server: "151.158.0.138"
+    server: "202.61.72.139"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -278,7 +278,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-06"
     type: vless
-    server: "151.158.0.11"
+    server: "202.153.4.53"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -293,7 +293,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-07"
     type: vless
-    server: "50.114.180.122"
+    server: "43.161.253.90"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -308,7 +308,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-08"
     type: vless
-    server: "151.158.0.231"
+    server: "202.148.220.228"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -323,7 +323,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-09"
     type: vless
-    server: "166.88.77.4"
+    server: "47.242.244.23"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -338,7 +338,7 @@ proxies:
         Host: "cfnew-aeo.pages.dev"
   - name: "香港优选-10"
     type: vless
-    server: "50.114.180.119"
+    server: "43.161.194.94"
     port: 443
     uuid: 351c9981-04b6-4103-aa4b-864aa9c91469
     udp: true
@@ -790,312 +790,6 @@ proxies:
       -----END RSA PRIVATE KEY-----
   - name: "🏠 JP-家宽-02"
     type: openvpn
-    server: 122.145.119.62
-    port: 1296
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-03"
-    type: openvpn
-    server: 58.87.159.9
-    port: 1605
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-04"
-    type: openvpn
-    server: 58.89.110.32
-    port: 1411
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-05"
-    type: openvpn
-    server: 182.166.224.128
-    port: 1452
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-06"
-    type: openvpn
-    server: 119.150.80.111
-    port: 1910
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-07"
-    type: openvpn
-    server: 119.171.255.242
-    port: 1756
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-08"
-    type: openvpn
-    server: 60.65.128.100
-    port: 1684
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-09"
-    type: openvpn
-    server: 110.163.142.88
-    port: 5555
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-10"
-    type: openvpn
-    server: 61.21.129.143
-    port: 1677
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-11"
-    type: openvpn
-    server: 60.153.240.76
-    port: 1727
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-12"
-    type: openvpn
-    server: 133.218.195.250
-    port: 1817
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-13"
-    type: openvpn
-    server: 60.122.72.195
-    port: 1377
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-14"
-    type: openvpn
-    server: 60.134.112.16
-    port: 1534
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-15"
-    type: openvpn
-    server: 126.84.84.26
-    port: 1871
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-16"
-    type: openvpn
-    server: 180.1.215.15
-    port: 1665
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-17"
-    type: openvpn
-    server: 113.154.3.100
-    port: 1754
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-18"
-    type: openvpn
-    server: 111.238.154.218
-    port: 1795
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-19"
-    type: openvpn
-    server: 116.82.239.43
-    port: 1291
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 JP-家宽-20"
-    type: openvpn
     server: 126.145.125.132
     port: 1901
     proto: tcp
@@ -1111,10 +805,10 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 JP-家宽-21"
+  - name: "🏠 JP-家宽-03"
     type: openvpn
-    server: 116.220.123.35
-    port: 995
+    server: 61.25.149.161
+    port: 1549
     proto: tcp
     username: vpn
     password: vpn
@@ -1128,10 +822,214 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 JP-家宽-22"
+  - name: "🏠 JP-家宽-04"
     type: openvpn
-    server: 203.165.84.210
-    port: 1472
+    server: 118.156.137.250
+    port: 1253
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-05"
+    type: openvpn
+    server: 118.154.24.167
+    port: 1401
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-06"
+    type: openvpn
+    server: 202.157.252.10
+    port: 1734
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-07"
+    type: openvpn
+    server: 153.195.183.76
+    port: 1807
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-08"
+    type: openvpn
+    server: 60.126.217.205
+    port: 1558
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-09"
+    type: openvpn
+    server: 113.153.88.108
+    port: 1566
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-10"
+    type: openvpn
+    server: 180.196.186.246
+    port: 1965
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-11"
+    type: openvpn
+    server: 133.202.71.180
+    port: 1843
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-12"
+    type: openvpn
+    server: 211.128.17.88
+    port: 1294
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-13"
+    type: openvpn
+    server: 60.35.135.188
+    port: 1545
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-14"
+    type: openvpn
+    server: 180.51.48.222
+    port: 1510
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-15"
+    type: openvpn
+    server: 133.218.53.46
+    port: 1395
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 JP-家宽-16"
+    type: openvpn
+    server: 219.100.26.85
+    port: 1351
     proto: tcp
     username: vpn
     password: vpn
@@ -1147,8 +1045,8 @@ proxies:
     key: *jkkey
   - name: "🏠 KR-家宽-01"
     type: openvpn
-    server: 183.99.11.29
-    port: 995
+    server: 175.116.62.99
+    port: 1248
     proto: tcp
     username: vpn
     password: vpn
@@ -1163,244 +1061,6 @@ proxies:
     cert: *jkcert
     key: *jkkey
   - name: "🏠 KR-家宽-02"
-    type: openvpn
-    server: 112.223.241.142
-    port: 1878
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-03"
-    type: openvpn
-    server: 220.119.207.149
-    port: 1896
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-04"
-    type: openvpn
-    server: 222.104.167.30
-    port: 1704
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-05"
-    type: openvpn
-    server: 118.42.53.222
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-06"
-    type: openvpn
-    server: 211.184.149.149
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-07"
-    type: openvpn
-    server: 121.168.25.111
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-08"
-    type: openvpn
-    server: 125.128.18.93
-    port: 1780
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-09"
-    type: openvpn
-    server: 112.165.31.229
-    port: 1682
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-10"
-    type: openvpn
-    server: 121.186.118.191
-    port: 1934
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-11"
-    type: openvpn
-    server: 211.250.237.198
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-12"
-    type: openvpn
-    server: 211.51.80.113
-    port: 1737
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-13"
-    type: openvpn
-    server: 112.164.131.50
-    port: 1921
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-14"
-    type: openvpn
-    server: 59.12.238.246
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-15"
-    type: openvpn
-    server: 125.142.199.179
-    port: 995
-    proto: tcp
-    username: vpn
-    password: vpn
-    cipher: AES-128-CBC
-    auth: SHA1
-    udp: false
-    handshake-timeout: 30
-    remote-dns-resolve: true
-    dns: [ 8.8.8.8, 1.1.1.1 ]
-    dialer-proxy: "⚡ CF前置"
-    ca: *jkca
-    cert: *jkcert
-    key: *jkkey
-  - name: "🏠 KR-家宽-16"
     type: openvpn
     server: 182.218.30.43
     port: 995
@@ -1417,7 +1077,7 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 KR-家宽-17"
+  - name: "🏠 KR-家宽-03"
     type: openvpn
     server: 115.94.203.131
     port: 1305
@@ -1434,9 +1094,196 @@ proxies:
     ca: *jkca
     cert: *jkcert
     key: *jkkey
-  - name: "🏠 KR-家宽-18"
+  - name: "🏠 KR-家宽-04"
     type: openvpn
-    server: 106.250.211.122
+    server: 183.106.84.223
+    port: 1418
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-05"
+    type: openvpn
+    server: 59.22.113.133
+    port: 995
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-06"
+    type: openvpn
+    server: 203.228.110.251
+    port: 1346
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-07"
+    type: openvpn
+    server: 125.137.180.146
+    port: 1783
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-08"
+    type: openvpn
+    server: 203.251.182.70
+    port: 995
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-09"
+    type: openvpn
+    server: 210.100.131.144
+    port: 1272
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-10"
+    type: openvpn
+    server: 210.100.217.169
+    port: 1644
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-11"
+    type: openvpn
+    server: 121.149.141.149
+    port: 1292
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-12"
+    type: openvpn
+    server: 121.164.146.116
+    port: 995
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-13"
+    type: openvpn
+    server: 58.120.119.140
+    port: 995
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-14"
+    type: openvpn
+    server: 119.64.168.108
+    port: 1849
+    proto: tcp
+    username: vpn
+    password: vpn
+    cipher: AES-128-CBC
+    auth: SHA1
+    udp: false
+    handshake-timeout: 30
+    remote-dns-resolve: true
+    dns: [ 8.8.8.8, 1.1.1.1 ]
+    dialer-proxy: "⚡ CF前置"
+    ca: *jkca
+    cert: *jkcert
+    key: *jkkey
+  - name: "🏠 KR-家宽-15"
+    type: openvpn
+    server: 125.140.60.105
     port: 995
     proto: tcp
     username: vpn
@@ -1577,12 +1424,6 @@ proxy-groups:
       - "🏠 JP-家宽-14"
       - "🏠 JP-家宽-15"
       - "🏠 JP-家宽-16"
-      - "🏠 JP-家宽-17"
-      - "🏠 JP-家宽-18"
-      - "🏠 JP-家宽-19"
-      - "🏠 JP-家宽-20"
-      - "🏠 JP-家宽-21"
-      - "🏠 JP-家宽-22"
       - "🏠 KR-家宽-01"
       - "🏠 KR-家宽-02"
       - "🏠 KR-家宽-03"
@@ -1598,9 +1439,6 @@ proxy-groups:
       - "🏠 KR-家宽-13"
       - "🏠 KR-家宽-14"
       - "🏠 KR-家宽-15"
-      - "🏠 KR-家宽-16"
-      - "🏠 KR-家宽-17"
-      - "🏠 KR-家宽-18"
   - name: "🏠 家宽节点"
     type: select
     proxies:
@@ -1620,12 +1458,6 @@ proxy-groups:
       - "🏠 JP-家宽-14"
       - "🏠 JP-家宽-15"
       - "🏠 JP-家宽-16"
-      - "🏠 JP-家宽-17"
-      - "🏠 JP-家宽-18"
-      - "🏠 JP-家宽-19"
-      - "🏠 JP-家宽-20"
-      - "🏠 JP-家宽-21"
-      - "🏠 JP-家宽-22"
       - "🏠 KR-家宽-01"
       - "🏠 KR-家宽-02"
       - "🏠 KR-家宽-03"
@@ -1641,9 +1473,6 @@ proxy-groups:
       - "🏠 KR-家宽-13"
       - "🏠 KR-家宽-14"
       - "🏠 KR-家宽-15"
-      - "🏠 KR-家宽-16"
-      - "🏠 KR-家宽-17"
-      - "🏠 KR-家宽-18"
   - name: "🚀 节点选择"
     type: select
     proxies:
